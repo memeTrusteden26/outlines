@@ -72,7 +72,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] Integrate RainbowKit/Wagmi for wallet connection.
 
 - [x] **Core Features UI**
-    - [x] **Job Board:** Display available jobs with bounty and bond requirements.
+    - [x] **Job Board:** Display available jobs with bounty, bond requirements, and category filtering.
     - [x] **Post Job:** Form to create new tasks (or chat interface integration).
     - [x] **My Jobs:** Dashboard for customers (active jobs) and workers (accepted jobs).
     - [x] **Profile/Reputation:** Display worker reputation score and history.

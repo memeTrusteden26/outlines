@@ -331,6 +331,25 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "activeJobTypes",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_jobId",
         "type": "uint256"
       },
@@ -361,6 +380,19 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
     "name": "disputeJob",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getActiveJobTypes",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

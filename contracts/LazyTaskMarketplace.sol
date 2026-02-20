@@ -37,6 +37,7 @@ contract LazyTaskMarketplace is AccessControl {
     address public rewardEngine;
     address public treasury;
     uint256 public platformFeeBps = 500; // 5%
+    string[] public activeJobTypes;
 
     event JobPosted(uint256 indexed jobId, address indexed customer, uint256 bounty, uint256 bondRequired);
     event JobAccepted(uint256 indexed jobId, address indexed worker);
@@ -66,7 +67,23 @@ contract LazyTaskMarketplace is AccessControl {
             status: JobStatus.Posted,
             evidenceHash: ""
         });
+
+        bool typeExists = false;
+        for (uint256 i = 0; i < activeJobTypes.length; i++) {
+            if (keccak256(bytes(activeJobTypes[i])) == keccak256(bytes(_jobType))) {
+                typeExists = true;
+                break;
+            }
+        }
+        if (!typeExists) {
+            activeJobTypes.push(_jobType);
+        }
+
         emit JobPosted(jobId, msg.sender, msg.value, _bondRequired);
+    }
+
+    function getActiveJobTypes() external view returns (string[] memory) {
+        return activeJobTypes;
     }
 
     function acceptJob(uint256 _jobId) public payable {
