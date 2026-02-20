@@ -23,6 +23,10 @@ async function deployContracts() {
     const rewardEngine = await RewardEngine.deploy();
     await rewardEngine.waitForDeployment();
 
+    const BadgeNFT = await ethers.getContractFactory("BadgeNFT");
+    const badgeNFT = await BadgeNFT.deploy();
+    await badgeNFT.waitForDeployment();
+
     const LazyTaskMarketplace = await ethers.getContractFactory("LazyTaskMarketplace");
     const marketplace = await LazyTaskMarketplace.deploy(await registry.getAddress(), await rewardEngine.getAddress());
     await marketplace.waitForDeployment();
@@ -31,12 +35,18 @@ async function deployContracts() {
     await registry.grantRole(MARKETPLACE_ROLE, await marketplace.getAddress());
     await rewardEngine.grantRole(MARKETPLACE_ROLE, await marketplace.getAddress());
 
+    // Setup Badges
+    const MINTER_ROLE = await badgeNFT.MINTER_ROLE();
+    await badgeNFT.grantRole(MINTER_ROLE, await registry.getAddress());
+    await registry.setBadgeNFT(await badgeNFT.getAddress());
+
     console.log("Contracts deployed:");
     console.log("Registry:", await registry.getAddress());
     console.log("RewardEngine:", await rewardEngine.getAddress());
+    console.log("BadgeNFT:", await badgeNFT.getAddress());
     console.log("Marketplace:", await marketplace.getAddress());
 
-    return { registry, rewardEngine, marketplace };
+    return { registry, rewardEngine, marketplace, badgeNFT };
 }
 
 module.exports = { getContract, deployContracts };

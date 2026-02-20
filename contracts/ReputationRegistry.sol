@@ -3,8 +3,14 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+interface IBadgeNFT {
+    function mintBadge(address to, uint256 badgeType) external;
+}
+
 contract ReputationRegistry is AccessControl {
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
+
+    address public badgeNFT;
 
     struct JobRecord {
         uint256 jobId;
@@ -26,12 +32,37 @@ contract ReputationRegistry is AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    function setBadgeNFT(address _badgeNFT) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        badgeNFT = _badgeNFT;
+    }
+
     // Record from Marketplace
     function recordJob(address _worker, uint256 _jobId, uint8 _rating, uint256 _bounty) external onlyRole(MARKETPLACE_ROLE) {
         workerHistory[_worker].push(JobRecord(_jobId, _rating, block.timestamp, _bounty, ""));
         totalRatings[_worker] += _rating;
         updateScore(_worker);
+
+        // Check for Badge Milestones
+        if (badgeNFT != address(0)) {
+            uint256 count = workerHistory[_worker].length;
+            if (count == 1) {
+                IBadgeNFT(badgeNFT).mintBadge(_worker, 1); // Badge Type 1: First Step
+            } else if (count == 5) {
+                IBadgeNFT(badgeNFT).mintBadge(_worker, 2); // Badge Type 2: Reliable
+            } else if (count == 10) {
+                IBadgeNFT(badgeNFT).mintBadge(_worker, 3); // Badge Type 3: Expert
+            }
+        }
+
         emit JobRecorded(_worker, _jobId, _rating);
+    }
+
+    // Record a slashed job (rating 0)
+    function recordSlash(address _worker, uint256 _jobId) external onlyRole(MARKETPLACE_ROLE) {
+        workerHistory[_worker].push(JobRecord(_jobId, 0, block.timestamp, 0, ""));
+        // totalRatings doesn't increase since rating is 0
+        updateScore(_worker);
+        emit JobRecorded(_worker, _jobId, 0);
     }
 
     // Update score (e.g., average + activity bonus)

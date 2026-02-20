@@ -63,6 +63,48 @@ We utilize **OpenClaw**, an open-source AI agent framework, to power the autonom
     npx hardhat run scripts/deploy.js --network localhost
     ```
 
+## 🔐 Security & Improvements
+
+Recent updates have enhanced the security and reliability of the platform:
+
+- **Gas Optimization**: Optimized job type checking using mappings to prevent gas griefing attacks.
+- **Refund Logic**: Added safeguards in `acceptJob` to automatically refund excess bond payments.
+- **Reputation Slashing**: Implemented `recordSlash` in `ReputationRegistry` to ensure that slashed bonds explicitly lower a worker's reputation score (recording a 0-rating job).
+- **Wallet Integration**: Added a dedicated `walletManager` for secure agent key management.
+
+## 📡 Smart Contract Addresses & ABI
+
+To interact with the contracts, use the following addresses (after local deployment):
+
+- **LazyTaskMarketplace**: `[Deploy to see address]`
+- **ReputationRegistry**: `[Deploy to see address]`
+- **RewardEngine**: `[Deploy to see address]`
+
+Run `npx hardhat run scripts/deploy.js --network localhost` to deploy and see the addresses.
+
+ABIs can be found in `artifacts/contracts/`.
+
+## 🤖 Running the Agent
+
+To run the AI agent skills locally:
+
+1.  **Configure Environment**:
+    Create a `.env` file in the root directory:
+    ```env
+    PRIVATE_KEY=your_private_key_here
+    JSON_RPC_URL=http://127.0.0.1:8545
+    ```
+
+2.  **Use the Skills**:
+    The agent skills are located in `scripts/agent-skills/`. You can integrate these into your OpenClaw agent or run them as standalone scripts.
+
+    Example usage of `walletManager`:
+    ```javascript
+    const { getAgentWallet } = require("./scripts/agent-skills/walletManager");
+    const wallet = getAgentWallet();
+    // Use wallet to sign transactions
+    ```
+
 ## 🗺 Roadmap
 
 Check out [todo.md](./todo.md) for a detailed list of planned features and tasks.

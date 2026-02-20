@@ -22,7 +22,14 @@ async function main() {
   const rewardEngineAddress = await rewardEngine.getAddress();
   console.log("RewardEngine deployed to:", rewardEngineAddress);
 
-  // 3. Deploy LazyTaskMarketplace
+  // 3. Deploy BadgeNFT
+  const BadgeNFT = await hre.ethers.getContractFactory("BadgeNFT");
+  const badgeNFT = await BadgeNFT.deploy();
+  await badgeNFT.waitForDeployment();
+  const badgeNFTAddress = await badgeNFT.getAddress();
+  console.log("BadgeNFT deployed to:", badgeNFTAddress);
+
+  // 4. Deploy LazyTaskMarketplace
   const LazyTaskMarketplace = await hre.ethers.getContractFactory("LazyTaskMarketplace");
   const lazyTaskMarketplace = await LazyTaskMarketplace.deploy(
     reputationRegistryAddress,
@@ -32,16 +39,21 @@ async function main() {
   const lazyTaskMarketplaceAddress = await lazyTaskMarketplace.getAddress();
   console.log("LazyTaskMarketplace deployed to:", lazyTaskMarketplaceAddress);
 
-  // 4. Grant Roles
+  // 5. Grant Roles & Setup
   const MARKETPLACE_ROLE = await reputationRegistry.MARKETPLACE_ROLE();
   await reputationRegistry.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
   await rewardEngine.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
-  console.log("Granted MARKETPLACE_ROLE to LazyTaskMarketplace");
 
-  // 5. Generate Config
+  const MINTER_ROLE = await badgeNFT.MINTER_ROLE();
+  await badgeNFT.grantRole(MINTER_ROLE, reputationRegistryAddress);
+  await reputationRegistry.setBadgeNFT(badgeNFTAddress);
+  console.log("Roles and BadgeNFT setup complete.");
+
+  // 6. Generate Config
   const reputationRegistryArtifact = await hre.artifacts.readArtifact("ReputationRegistry");
   const rewardEngineArtifact = await hre.artifacts.readArtifact("RewardEngine");
   const lazyTaskMarketplaceArtifact = await hre.artifacts.readArtifact("LazyTaskMarketplace");
+  const badgeNFTArtifact = await hre.artifacts.readArtifact("BadgeNFT");
 
   const configContent = `
 export const LAZY_TASK_MARKETPLACE_ADDRESS = "${lazyTaskMarketplaceAddress}";
@@ -52,6 +64,9 @@ export const REPUTATION_REGISTRY_ABI = ${JSON.stringify(reputationRegistryArtifa
 
 export const REWARD_ENGINE_ADDRESS = "${rewardEngineAddress}";
 export const REWARD_ENGINE_ABI = ${JSON.stringify(rewardEngineArtifact.abi, null, 2)} as const;
+
+export const BADGE_NFT_ADDRESS = "${badgeNFTAddress}";
+export const BADGE_NFT_ABI = ${JSON.stringify(badgeNFTArtifact.abi, null, 2)} as const;
 `;
 
   const configPath = path.join(__dirname, "../frontend/config/contracts.ts");
