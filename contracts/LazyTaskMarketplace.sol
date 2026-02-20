@@ -38,6 +38,7 @@ contract LazyTaskMarketplace is AccessControl {
     event JobCompleted(uint256 indexed jobId, address indexed worker, uint8 rating);
     event JobDisputed(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
+    event EvidenceSubmitted(uint256 indexed jobId, address indexed worker, string evidenceHash);
 
     constructor(address _reputationRegistry, address _rewardEngine) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -72,6 +73,13 @@ contract LazyTaskMarketplace is AccessControl {
         job.status = JobStatus.Accepted;
 
         emit JobAccepted(_jobId, msg.sender);
+    }
+
+    function submitEvidence(uint256 _jobId, string memory _evidenceHash) public {
+        Job storage job = jobs[_jobId];
+        require(msg.sender == job.worker, "Only worker");
+        require(job.status == JobStatus.Accepted, "Job not accepted");
+        emit EvidenceSubmitted(_jobId, msg.sender, _evidenceHash);
     }
 
     function completeJob(uint256 _jobId, uint8 _rating) public {

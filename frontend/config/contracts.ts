@@ -52,6 +52,31 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
         "internalType": "address",
         "name": "worker",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidenceHash",
+        "type": "string"
+      }
+    ],
+    "name": "EvidenceSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
       }
     ],
     "name": "JobAccepted",
@@ -525,6 +550,24 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
       }
     ],
     "name": "slashBond",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_evidenceHash",
+        "type": "string"
+      }
+    ],
+    "name": "submitEvidence",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

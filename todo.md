@@ -77,10 +77,10 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] **My Jobs:** Dashboard for customers (active jobs) and workers (accepted jobs).
     - [x] **Profile/Reputation:** Display worker reputation score and history.
 
-- [ ] **Interaction Flows**
-    - [ ] Implement "Accept Job" flow (approve bond token -> stake).
-    - [ ] Implement "Submit Evidence" flow (upload photo -> IPFS -> submit hash).
-    - [ ] Implement "Complete/Rate" flow for customers.
+- [x] **Interaction Flows**
+    - [x] Implement "Accept Job" flow (approve bond token -> stake).
+    - [x] Implement "Submit Evidence" flow (upload photo -> IPFS -> submit hash).
+    - [x] Implement "Complete/Rate" flow for customers.
 
 ## Phase 4: Incentives & Economics
 
