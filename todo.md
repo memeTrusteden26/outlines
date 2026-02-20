@@ -14,7 +14,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] Implement `acceptJob(uint256 _jobId)` function with bonding requirement.
     - [x] Implement `completeJob(uint256 _jobId, uint8 _rating)` function (customer or oracle trigger).
     - [x] Implement `disputeJob(uint256 _jobId, string _evidenceHash)` function.
-    - [x] Implement `slashBond(uint256 _jobId)` internal/admin function.
+    - [x] Implement `resolveDispute(uint256 _jobId, bool _workerWins, uint8 _rating)` (replaced `slashBond`).
     - [x] Add events for all major actions (JobPosted, JobAccepted, JobCompleted, JobDisputed).
 
 - [x] **Implement `ReputationRegistry` Contract**
@@ -22,7 +22,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] Implement `recordJob(address _worker, uint256 _jobId, uint8 _rating, uint256 _bounty)` function.
     - [x] Implement `updateScore(address _worker)` internal function.
     - [x] Implement `addEvidence(address _worker, uint256 _jobId, string _evidenceHash)` function.
-    - [x] Implement `checkEligibility(address _worker, string _jobType)` view function.
+    - [x] Implement `checkEligibility(address _worker, string _jobType)` view function (with min score logic).
 
 - [x] **Implement `RewardEngine` Contract**
     - [x] Create ERC-20 token (e.g., `LazyToken`).
@@ -63,6 +63,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [ ] Implement flow where agent initiates payment upon verification.
 
 - [ ] **Dispute Resolution**
+    - [x] Implement basic arbitrator role and dispute resolution flow.
     - [ ] Implement multi-agent coordination for disputes (one verifies, one arbitrates).
 
 ## Phase 3: Frontend & User Interface
@@ -91,6 +92,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [ ] **Advanced Features**
     - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [x] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
+    - [x] Implement `ARBITRATOR_ROLE` for dispute resolution (foundation for governance).
     - [ ] Community governance for arbitrator rotation.
 
 ## Phase 5: Documentation & Launch

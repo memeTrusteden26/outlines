@@ -103,7 +103,7 @@ describe("LazyTaskMarketplace", function () {
     expect(job.status).to.equal(3); // Disputed
   });
 
-  it("Should allow admin to slash bond and refund bounty", async function () {
+  it("Should allow arbitrator to resolve dispute (worker loses)", async function () {
     const bounty = ethers.parseEther("1.0");
     const bond = ethers.parseEther("0.1");
 
@@ -114,12 +114,13 @@ describe("LazyTaskMarketplace", function () {
     // Check balances before slash
     const customerBalanceBefore = await ethers.provider.getBalance(customer.address);
 
-    // Admin (owner) calls slashBond
-    const tx = await marketplace.connect(owner).slashBond(0);
+    // Arbitrator (owner) calls resolveDispute with workerWins = false
+    const tx = await marketplace.connect(owner).resolveDispute(0, false, 0); // 0 rating irrelevant here
     await tx.wait();
 
     // Verify events
     await expect(tx).to.emit(marketplace, "JobSlashed").withArgs(0, worker.address, bond);
+    await expect(tx).to.emit(marketplace, "JobResolved").withArgs(0, false);
 
     // Verify customer got bounty + bond
     const customerBalanceAfter = await ethers.provider.getBalance(customer.address);
@@ -129,6 +130,34 @@ describe("LazyTaskMarketplace", function () {
 
     const job = await marketplace.jobs(0);
     expect(job.status).to.equal(4); // Rejected
+  });
+
+  it("Should allow arbitrator to resolve dispute (worker wins)", async function () {
+    const bounty = ethers.parseEther("1.0");
+    const bond = ethers.parseEther("0.1");
+
+    await marketplace.connect(customer).postJob("Dispute me", bond, { value: bounty });
+    await marketplace.connect(worker).acceptJob(0, { value: bond });
+    await marketplace.connect(worker).disputeJob(0, "QmHash");
+
+    // Check balances before resolution
+    const workerBalanceBefore = await ethers.provider.getBalance(worker.address);
+
+    // Arbitrator (owner) calls resolveDispute with workerWins = true
+    const tx = await marketplace.connect(owner).resolveDispute(0, true, 5); // 5 star rating
+    await tx.wait();
+
+    // Verify events
+    await expect(tx).to.emit(marketplace, "JobCompleted").withArgs(0, worker.address, 5);
+    await expect(tx).to.emit(marketplace, "JobResolved").withArgs(0, true);
+
+    // Verify worker got bounty + bond
+    const fee = (bounty * 500n) / 10000n;
+    const workerBalanceAfter = await ethers.provider.getBalance(worker.address);
+    expect(workerBalanceAfter).to.equal(workerBalanceBefore + (bounty - fee) + bond);
+
+    const job = await marketplace.jobs(0);
+    expect(job.status).to.equal(2); // Completed
   });
 
   it("Should return active job types correctly", async function () {

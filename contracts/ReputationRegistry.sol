@@ -23,10 +23,12 @@ contract ReputationRegistry is AccessControl {
     mapping(address => JobRecord[]) public workerHistory;
     mapping(address => uint256) public reputationScores;
     mapping(address => uint256) public totalRatings;
+    mapping(bytes32 => uint256) public minReputationScores;
 
     event JobRecorded(address indexed worker, uint256 indexed jobId, uint8 rating);
     event EvidenceAdded(address indexed worker, uint256 indexed jobId, string evidenceHash);
     event ScoreUpdated(address indexed worker, uint256 newScore);
+    event MinScoreSet(string jobType, uint256 minScore);
 
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -34,6 +36,11 @@ contract ReputationRegistry is AccessControl {
 
     function setBadgeNFT(address _badgeNFT) external onlyRole(DEFAULT_ADMIN_ROLE) {
         badgeNFT = _badgeNFT;
+    }
+
+    function setMinReputationScore(string memory _jobType, uint256 _score) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        minReputationScores[keccak256(bytes(_jobType))] = _score;
+        emit MinScoreSet(_jobType, _score);
     }
 
     // Record from Marketplace
@@ -95,11 +102,11 @@ contract ReputationRegistry is AccessControl {
     }
 
     // Check eligibility for job tiers
-    function checkEligibility(address _worker, string memory /* _jobType */) external view returns (bool) {
-        // For MVP, allow all. In production, check score vs jobType requirements.
-        // uint256 score = reputationScores[_worker];
-        // return score >= 450;
-        return true;
+    function checkEligibility(address _worker, string memory _jobType) external view returns (bool) {
+        uint256 minScore = minReputationScores[keccak256(bytes(_jobType))];
+        if (minScore == 0) return true; // No requirement
+
+        return reputationScores[_worker] >= minScore;
     }
 
     function getWorkerHistory(address _worker) external view returns (JobRecord[] memory) {
