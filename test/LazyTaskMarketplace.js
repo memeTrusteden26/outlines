@@ -70,10 +70,6 @@ describe("LazyTaskMarketplace", function () {
     const tx = await marketplace.connect(customer).completeJob(0, 5); // 5 star rating
     await tx.wait();
 
-    // Verify event (checking args directly on tx object is tricky, better use expect().to.emit)
-    // But since we awaited wait(), we can't chain expect().to.emit on tx easily unless we didn't await.
-    // Actually we can do expect(tx).to.emit... because tx is the response.
-
     // Verify worker got bounty + bond
     // Note: 5% platform fee is deducted from bounty for Tier 0 worker
     const fee = (bounty * 500n) / 10000n;

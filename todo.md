@@ -94,6 +94,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [ ] **Advanced Features**
     - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [x] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
+    - [x] Implement `ARBITRATOR_ROLE` for dispute resolution (foundation for governance).
     - [ ] Community governance for arbitrator rotation.
 
 ## Phase 5: Documentation & Launch

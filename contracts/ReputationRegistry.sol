@@ -28,6 +28,7 @@ contract ReputationRegistry is AccessControl {
     event JobRecorded(address indexed worker, uint256 indexed jobId, uint8 rating);
     event EvidenceAdded(address indexed worker, uint256 indexed jobId, string evidenceHash);
     event ScoreUpdated(address indexed worker, uint256 newScore);
+    event MinScoreSet(string jobType, uint256 minScore);
 
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -39,6 +40,7 @@ contract ReputationRegistry is AccessControl {
 
     function setMinReputationScore(string memory _jobType, uint256 _score) external onlyRole(DEFAULT_ADMIN_ROLE) {
         minReputationScores[_jobType] = _score;
+        emit MinScoreSet(_jobType, _score);
     }
 
     // Record from Marketplace
