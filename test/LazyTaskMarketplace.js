@@ -75,8 +75,10 @@ describe("LazyTaskMarketplace", function () {
     // Actually we can do expect(tx).to.emit... because tx is the response.
 
     // Verify worker got bounty + bond
+    // Note: 5% platform fee is deducted from bounty for Tier 0 worker
+    const fee = (bounty * 500n) / 10000n;
     const workerBalanceAfter = await ethers.provider.getBalance(worker.address);
-    expect(workerBalanceAfter).to.equal(workerBalanceBefore + bounty + bond);
+    expect(workerBalanceAfter).to.equal(workerBalanceBefore + (bounty - fee) + bond);
 
     // Verify rewards
     expect(await rewardEngine.balanceOf(worker.address)).to.equal(ethers.parseEther("100"));
@@ -101,7 +103,7 @@ describe("LazyTaskMarketplace", function () {
     expect(job.status).to.equal(3); // Disputed
   });
 
-  it("Should allow admin to slash bond and refund bounty", async function () {
+  it("Should allow arbitrator to resolve dispute (Customer Wins)", async function () {
     const bounty = ethers.parseEther("1.0");
     const bond = ethers.parseEther("0.1");
 
@@ -112,12 +114,13 @@ describe("LazyTaskMarketplace", function () {
     // Check balances before slash
     const customerBalanceBefore = await ethers.provider.getBalance(customer.address);
 
-    // Admin (owner) calls slashBond
-    const tx = await marketplace.connect(owner).slashBond(0);
+    // Arbitrator (owner) calls resolveDispute
+    const tx = await marketplace.connect(owner).resolveDispute(0, false, 0);
     await tx.wait();
 
     // Verify events
     await expect(tx).to.emit(marketplace, "JobSlashed").withArgs(0, worker.address, bond);
+    await expect(tx).to.emit(marketplace, "JobResolved").withArgs(0, owner.address, false);
 
     // Verify customer got bounty + bond
     const customerBalanceAfter = await ethers.provider.getBalance(customer.address);
@@ -127,5 +130,71 @@ describe("LazyTaskMarketplace", function () {
 
     const job = await marketplace.jobs(0);
     expect(job.status).to.equal(4); // Rejected
+  });
+
+  it("Should allow arbitrator to resolve dispute (Worker Wins)", async function () {
+    const bounty = ethers.parseEther("1.0");
+    const bond = ethers.parseEther("0.1");
+
+    await marketplace.connect(customer).postJob("Resolve me", bond, { value: bounty });
+    await marketplace.connect(worker).acceptJob(0, { value: bond });
+    await marketplace.connect(worker).disputeJob(0, "QmHash");
+
+    const workerBalanceBefore = await ethers.provider.getBalance(worker.address);
+
+    // Arbitrator calls resolveDispute with workerWins = true, rating = 5
+    const tx = await marketplace.connect(owner).resolveDispute(0, true, 5);
+    await tx.wait();
+
+    await expect(tx).to.emit(marketplace, "JobCompleted").withArgs(0, worker.address, 5);
+    await expect(tx).to.emit(marketplace, "JobResolved").withArgs(0, owner.address, true);
+
+    const fee = (bounty * 500n) / 10000n;
+    const workerBalanceAfter = await ethers.provider.getBalance(worker.address);
+    // Worker gets bounty - fee + bond
+    expect(workerBalanceAfter).to.equal(workerBalanceBefore + (bounty - fee) + bond);
+
+    const job = await marketplace.jobs(0);
+    expect(job.status).to.equal(2); // Completed
+  });
+
+  it("Should enforce minimum reputation score for job types", async function () {
+    // Set min score for "ExpertJob" to 400
+    await registry.connect(owner).setMinReputationScore("ExpertJob", 400);
+
+    const bounty = ethers.parseEther("1.0");
+    const bond = ethers.parseEther("0.1");
+
+    // Post "ExpertJob"
+    await marketplace.connect(customer).postJob("ExpertJob", bond, { value: bounty });
+
+    // Worker has 0 score, should fail
+    await expect(marketplace.connect(worker).acceptJob(0, { value: bond }))
+      .to.be.revertedWith("Not eligible");
+
+    // Post "EasyJob" to build reputation
+    await marketplace.connect(customer).postJob("EasyJob", bond, { value: bounty });
+    await marketplace.connect(worker).acceptJob(1, { value: bond });
+    await marketplace.connect(customer).completeJob(1, 5);
+
+    // Now worker has 500 score (1 job, 5 stars). Should be able to accept ExpertJob (job 0)
+    await marketplace.connect(worker).acceptJob(0, { value: bond });
+
+    const job = await marketplace.jobs(0);
+    expect(job.worker).to.equal(worker.address);
+  });
+
+  it("Should return active job types correctly", async function () {
+    const bond = ethers.parseEther("0.1");
+    const bounty = ethers.parseEther("1.0");
+
+    await marketplace.connect(customer).postJob("Cleaning", bond, { value: bounty });
+    await marketplace.connect(customer).postJob("Programming", bond, { value: bounty });
+    await marketplace.connect(customer).postJob("Cleaning", bond, { value: bounty }); // Duplicate type
+
+    const types = await marketplace.getActiveJobTypes();
+    expect(types.length).to.equal(2);
+    expect(types[0]).to.equal("Cleaning");
+    expect(types[1]).to.equal("Programming");
   });
 });

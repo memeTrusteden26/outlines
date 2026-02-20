@@ -8,6 +8,7 @@ contract RewardEngine is ERC20, AccessControl {
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
 
     mapping(address => uint256) public creditScores;
+    uint256 public constant MAX_SUPPLY = 1000000 * 10**18;
 
     event RewardsIssued(address indexed worker, uint256 amount);
     event TokensSlashed(address indexed worker, uint256 amount);
@@ -20,8 +21,10 @@ contract RewardEngine is ERC20, AccessControl {
     function issueRewards(address _worker, uint8 _rating) external onlyRole(MARKETPLACE_ROLE) {
         if (_rating >= 4) {
             uint256 rewardAmount = 100 * 10**decimals();
-            _mint(_worker, rewardAmount);
-            emit RewardsIssued(_worker, rewardAmount);
+            if (totalSupply() + rewardAmount <= MAX_SUPPLY) {
+                _mint(_worker, rewardAmount);
+                emit RewardsIssued(_worker, rewardAmount);
+            }
             updateCredit(_worker);
         }
     }
