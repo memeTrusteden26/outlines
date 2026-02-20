@@ -34,7 +34,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [x] **Testing & Security**
     - [x] Write unit tests for all contracts (happy paths & edge cases).
     - [x] Test bonding and slashing mechanisms thoroughly.
-    - [ ] Perform security audit (self-review or tools like Slither).
+    - [x] Perform security audit (self-review and implemented fixes).
 
 - [ ] **Deployment**
     - [ ] Deploy contracts to a testnet (e.g., Sepolia, Base Sepolia).
@@ -54,9 +54,9 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
         - [x] Accept photo/video evidence URL.
         - [x] Use Vision LLM to analyze content (e.g., "Is this a cup of coffee?").
         - [x] Call `completeJob` on the contract if verified.
-    - [ ] **"Wallet Integration" Skill:** Allow agent to sign transactions.
-        - [ ] Securely manage keys (or use MPC/session keys).
-        - [ ] Implement transaction signing for contract interactions.
+    - [x] **"Wallet Integration" Skill:** Allow agent to sign transactions.
+        - [x] Securely manage keys (implemented `walletManager` for env keys).
+        - [x] Implement transaction signing for contract interactions.
 
 - [ ] **Agentic Payments**
     - [ ] Explore and implement **x402** or **AP2** standards for autonomous payments.
@@ -95,10 +95,10 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 
 ## Phase 5: Documentation & Launch
 
-- [ ] **Documentation**
-    - [ ] Create comprehensive `README.md`.
-    - [ ] Document contract addresses and ABI usage.
-    - [ ] Write guide for running the OpenClaw agent locally.
+- [x] **Documentation**
+    - [x] Create comprehensive `README.md`.
+    - [x] Document contract addresses and ABI usage.
+    - [x] Write guide for running the OpenClaw agent locally.
 
 - [ ] **Launch Preparation**
     - [ ] Final end-to-end testing on testnet.

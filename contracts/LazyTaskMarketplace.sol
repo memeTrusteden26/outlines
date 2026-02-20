@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface IReputationRegistry {
     function recordJob(address _worker, uint256 _jobId, uint8 _rating, uint256 _bounty) external;
+    function recordSlash(address _worker, uint256 _jobId) external;
     function checkEligibility(address _worker, string memory _jobType) external view returns (bool);
     function reputationScores(address _worker) external view returns (uint256);
     function getJobCount(address _worker) external view returns (uint256);
@@ -38,6 +39,7 @@ contract LazyTaskMarketplace is AccessControl {
     address public treasury;
     uint256 public platformFeeBps = 500; // 5%
     string[] public activeJobTypes;
+    mapping(bytes32 => bool) public activeJobTypesMap;
 
     event JobPosted(uint256 indexed jobId, address indexed customer, uint256 bounty, uint256 bondRequired);
     event JobAccepted(uint256 indexed jobId, address indexed worker);
@@ -68,14 +70,9 @@ contract LazyTaskMarketplace is AccessControl {
             evidenceHash: ""
         });
 
-        bool typeExists = false;
-        for (uint256 i = 0; i < activeJobTypes.length; i++) {
-            if (keccak256(bytes(activeJobTypes[i])) == keccak256(bytes(_jobType))) {
-                typeExists = true;
-                break;
-            }
-        }
-        if (!typeExists) {
+        bytes32 typeHash = keccak256(bytes(_jobType));
+        if (!activeJobTypesMap[typeHash]) {
+            activeJobTypesMap[typeHash] = true;
             activeJobTypes.push(_jobType);
         }
 
@@ -96,6 +93,12 @@ contract LazyTaskMarketplace is AccessControl {
 
         job.worker = msg.sender;
         job.status = JobStatus.Accepted;
+
+        // Refund excess bond
+        if (msg.value > job.workerBond) {
+            (bool success, ) = payable(msg.sender).call{value: msg.value - job.workerBond}("");
+            require(success, "Refund failed");
+        }
 
         emit JobAccepted(_jobId, msg.sender);
     }
@@ -173,6 +176,9 @@ contract LazyTaskMarketplace is AccessControl {
             // Also slash tokens
             try IRewardEngine(rewardEngine).slash(job.worker, bond) {} catch {}
         }
+
+        // Record slash in reputation registry (penalize score)
+        try IReputationRegistry(reputationRegistry).recordSlash(job.worker, _jobId) {} catch {}
 
         // Refund bounty to customer (since job is failed/slashed)
         if (job.bounty > 0) {

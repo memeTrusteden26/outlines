@@ -34,6 +34,14 @@ contract ReputationRegistry is AccessControl {
         emit JobRecorded(_worker, _jobId, _rating);
     }
 
+    // Record a slashed job (rating 0)
+    function recordSlash(address _worker, uint256 _jobId) external onlyRole(MARKETPLACE_ROLE) {
+        workerHistory[_worker].push(JobRecord(_jobId, 0, block.timestamp, 0, ""));
+        // totalRatings doesn't increase since rating is 0
+        updateScore(_worker);
+        emit JobRecorded(_worker, _jobId, 0);
+    }
+
     // Update score (e.g., average + activity bonus)
     function updateScore(address _worker) internal {
         uint256 count = workerHistory[_worker].length;
