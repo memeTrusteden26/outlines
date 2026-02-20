@@ -34,7 +34,7 @@ async function verifyJob(marketplace, jobId, evidenceUrl, signer) {
         }
     } else {
         console.log("Agent rejected job. (In MVP, maybe dispute or just don't verify).");
-        // Could call slashBond if implemented as an Oracle or dispute flow
+        // Could call resolveDispute if implemented as an Oracle or dispute flow
     }
 }
 

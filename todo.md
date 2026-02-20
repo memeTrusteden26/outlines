@@ -58,15 +58,15 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
         - [x] Securely manage keys (implemented `walletManager` for env keys).
         - [x] Implement transaction signing for contract interactions.
 
-- [ ] **Agentic Payments**
-    - [ ] Explore and implement **x402** or **AP2** standards for autonomous payments.
-    - [ ] Implement flow where agent initiates payment upon verification.
-    - [ ] Examine https://ethereum-magicians.org/t/erc-8165-agentic-on-chain-operation-interface/27773 for integration and support
-    - [ ] Examine https://ethereum-magicians.org/t/erc-8162-agent-subscription-protocol/27751 for integration and support
+- [x] **Agentic Payments**
+    - [x] Explore and implement **x402** or **AP2** standards for autonomous payments (Implemented `PerRequestPayment.sol` as a stand-in).
+    - [x] Implement flow where agent initiates payment upon verification (Implemented `AgenticOperation` with verification flow).
+    - [x] Examine https://ethereum-magicians.org/t/erc-8165-agentic-on-chain-operation-interface/27773 for integration and support (Implemented `AgenticOperation.sol`).
+    - [x] Examine https://ethereum-magicians.org/t/erc-8162-agent-subscription-protocol/27751 for integration and support (Implemented `AgentSubscription.sol`).
 
 - [ ] **Dispute Resolution**
     - [x] Implement on-chain dispute resolution logic (`resolveDispute`, `ARBITRATOR_ROLE`).
-    - [ ] Implement multi-agent coordination for disputes (one verifies, one arbitrates).
+    - [x] Implement multi-agent coordination for disputes (one verifies, one arbitrates).
 
 ## Phase 3: Frontend & User Interface
 
@@ -94,6 +94,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [ ] **Advanced Features**
     - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [x] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
+    - [x] Implement `ARBITRATOR_ROLE` for dispute resolution (foundation for governance).
     - [ ] Community governance for arbitrator rotation.
 
 ## Phase 5: Documentation & Launch

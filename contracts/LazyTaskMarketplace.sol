@@ -46,8 +46,8 @@ contract LazyTaskMarketplace is AccessControl {
     event JobAccepted(uint256 indexed jobId, address indexed worker);
     event JobCompleted(uint256 indexed jobId, address indexed worker, uint8 rating);
     event JobDisputed(uint256 indexed jobId, address indexed worker, string evidenceHash);
-    event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
     event JobResolved(uint256 indexed jobId, address indexed resolver, bool workerWins);
+    event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
     event EvidenceSubmitted(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event FeeTaken(uint256 indexed jobId, uint256 fee, uint256 workerEarnings);
 
@@ -134,6 +134,11 @@ contract LazyTaskMarketplace is AccessControl {
         require(msg.sender == job.customer || hasRole(ORACLE_ROLE, msg.sender), "Not authorized");
         require(job.status == JobStatus.Accepted, "Job not accepted");
 
+        _finalizeJob(_jobId, _rating);
+    }
+
+    function _finalizeJob(uint256 _jobId, uint8 _rating) internal {
+        Job storage job = jobs[_jobId];
         job.status = JobStatus.Completed;
 
         (uint256 fee, uint256 workerEarnings) = _calculateFee(job.worker, job.bounty);
@@ -175,31 +180,7 @@ contract LazyTaskMarketplace is AccessControl {
         require(job.status == JobStatus.Disputed, "Job not disputed");
 
         if (_workerWins) {
-            // Worker wins: treat as completed
-            job.status = JobStatus.Completed;
-
-            (uint256 fee, uint256 workerEarnings) = _calculateFee(job.worker, job.bounty);
-
-            // Transfer bounty to worker
-            (bool success, ) = payable(job.worker).call{value: workerEarnings}("");
-            require(success, "Transfer failed");
-
-            if (fee > 0) {
-                (bool feeSuccess, ) = payable(treasury).call{value: fee}("");
-                require(feeSuccess, "Fee transfer failed");
-            }
-
-            // Return bond to worker
-            if (job.workerBond > 0) {
-                (bool bondSuccess, ) = payable(job.worker).call{value: job.workerBond}("");
-                require(bondSuccess, "Bond transfer failed");
-            }
-
-            IReputationRegistry(reputationRegistry).recordJob(job.worker, _jobId, _rating, job.bounty);
-            IRewardEngine(rewardEngine).issueRewards(job.worker, _rating);
-
-            emit JobCompleted(_jobId, job.worker, _rating);
-            emit FeeTaken(_jobId, fee, workerEarnings);
+            _finalizeJob(_jobId, _rating);
         } else {
             // Customer wins: slash worker
             job.status = JobStatus.Rejected;
