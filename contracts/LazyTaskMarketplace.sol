@@ -48,6 +48,7 @@ contract LazyTaskMarketplace is AccessControl {
     event JobDisputed(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event JobResolved(uint256 indexed jobId, address indexed resolver, bool workerWins);
     event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
+    event JobResolved(uint256 indexed jobId, address indexed resolver, bool workerWins);
     event EvidenceSubmitted(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event FeeTaken(uint256 indexed jobId, uint256 fee, uint256 workerEarnings);
 
