@@ -1,0 +1,31 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "LazyTask Marketplace is a blockchain-based platform designed for \"lazy\" customers who are willing to pay a premium for convenience. It connects them with reliable workers who stake funds (\"bond\") to guarantee task completion. The system leverages AI agents for verification, dispute resolution, and automated payments, creating a trustless and efficient gig economy.",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LokiMetaSmith/outlines.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LokiMetaSmith/outlines/issues"
+  },
+  "homepage": "https://github.com/LokiMetaSmith/outlines#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "^2.28.6"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0"
+  }
+}

@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+contract ReputationRegistry is AccessControl {
+    bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
+
+    struct JobRecord {
+        uint256 jobId;
+        uint8 rating; // 1-5
+        uint256 timestamp;
+        uint256 bounty;
+        string evidenceHash; // IPFS hash for photos/proofs
+    }
+
+    mapping(address => JobRecord[]) public workerHistory;
+    mapping(address => uint256) public reputationScores;
+    mapping(address => uint256) public totalRatings;
+
+    event JobRecorded(address indexed worker, uint256 indexed jobId, uint8 rating);
+    event EvidenceAdded(address indexed worker, uint256 indexed jobId, string evidenceHash);
+    event ScoreUpdated(address indexed worker, uint256 newScore);
+
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    // Record from Marketplace
+    function recordJob(address _worker, uint256 _jobId, uint8 _rating, uint256 _bounty) external onlyRole(MARKETPLACE_ROLE) {
+        workerHistory[_worker].push(JobRecord(_jobId, _rating, block.timestamp, _bounty, ""));
+        totalRatings[_worker] += _rating;
+        updateScore(_worker);
+        emit JobRecorded(_worker, _jobId, _rating);
+    }
+
+    // Update score (e.g., average + activity bonus)
+    function updateScore(address _worker) internal {
+        uint256 count = workerHistory[_worker].length;
+        if (count == 0) return;
+
+        // Simple average scaled by 100 (1-5 becomes 100-500)
+        // O(1) calculation using tracked total
+        reputationScores[_worker] = (totalRatings[_worker] * 100) / count;
+        emit ScoreUpdated(_worker, reputationScores[_worker]);
+    }
+
+    // Challenge rating (worker adds evidence)
+    function addEvidence(address _worker, uint256 _jobId, string memory _evidenceHash) public {
+        // Allow worker to add evidence for their own job, or admin/marketplace
+        require(msg.sender == _worker || hasRole(MARKETPLACE_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not authorized");
+
+        JobRecord[] storage history = workerHistory[_worker];
+        bool found = false;
+        for (uint256 i = 0; i < history.length; i++) {
+            if (history[i].jobId == _jobId) {
+                history[i].evidenceHash = _evidenceHash;
+                found = true;
+                break;
+            }
+        }
+        require(found, "Job not found");
+        emit EvidenceAdded(_worker, _jobId, _evidenceHash);
+    }
+
+    // Check eligibility for job tiers
+    function checkEligibility(address _worker, string memory /* _jobType */) external view returns (bool) {
+        // For MVP, allow all. In production, check score vs jobType requirements.
+        // uint256 score = reputationScores[_worker];
+        // return score >= 450;
+        return true;
+    }
+}
