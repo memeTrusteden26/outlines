@@ -67,13 +67,13 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 
 ## Phase 3: Frontend & User Interface
 
-- [ ] **Frontend Setup**
-    - [ ] Initialize React/Next.js project.
-    - [ ] Integrate RainbowKit/Wagmi for wallet connection.
+- [x] **Frontend Setup**
+    - [x] Initialize React/Next.js project.
+    - [x] Integrate RainbowKit/Wagmi for wallet connection.
 
-- [ ] **Core Features UI**
-    - [ ] **Job Board:** Display available jobs with bounty and bond requirements.
-    - [ ] **Post Job:** Form to create new tasks (or chat interface integration).
+- [x] **Core Features UI**
+    - [x] **Job Board:** Display available jobs with bounty and bond requirements.
+    - [x] **Post Job:** Form to create new tasks (or chat interface integration).
     - [ ] **My Jobs:** Dashboard for customers (active jobs) and workers (accepted jobs).
     - [ ] **Profile/Reputation:** Display worker reputation score and history.
 
