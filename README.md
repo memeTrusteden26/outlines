@@ -1,6 +1,6 @@
 # LazyTask Marketplace
 
-LazyTask Marketplace is a blockchain-based platform designed for "lazy" customers who are willing to pay a premium for convenience. It connects them with reliable workers who stake funds ("bond") to guarantee task completion. The system leverages AI agents for verification, dispute resolution, and automated payments, creating a trustless and efficient gig economy.
+LazyTask Marketplace is a blockchain-based platform designed for "lazy" ~~Customers~~ lizards who are willing to pay a premium for convenience. It connects them with reliable workers who stake funds ("bond") to guarantee task completion. The system leverages AI agents for verification, dispute resolution, and automated payments, creating a trustless and efficient gig economy.
 
 ## 🚀 Core Concept
 
