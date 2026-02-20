@@ -61,6 +61,8 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [ ] **Agentic Payments**
     - [ ] Explore and implement **x402** or **AP2** standards for autonomous payments.
     - [ ] Implement flow where agent initiates payment upon verification.
+    - [ ] Examine https://ethereum-magicians.org/t/erc-8165-agentic-on-chain-operation-interface/27773 for integration and support
+    - [ ] Examine https://ethereum-magicians.org/t/erc-8162-agent-subscription-protocol/27751 for integration and support
 
 - [ ] **Dispute Resolution**
     - [x] Implement on-chain dispute resolution logic (`resolveDispute`, `ARBITRATOR_ROLE`).
