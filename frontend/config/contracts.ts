@@ -73,6 +73,31 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
         "type": "uint256"
       },
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "workerEarnings",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeTaken",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "worker",
@@ -443,6 +468,11 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
         "internalType": "enum LazyTaskMarketplace.JobStatus",
         "name": "status",
         "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "evidenceHash",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -451,6 +481,19 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
   {
     "inputs": [],
     "name": "nextJobId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformFeeBps",
     "outputs": [
       {
         "internalType": "uint256",
@@ -586,6 +629,19 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -833,6 +889,25 @@ export const REPUTATION_REGISTRY_ABI = [
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_worker",
+        "type": "address"
+      }
+    ],
+    "name": "getJobCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1429,6 +1504,19 @@ export const REWARD_ENGINE_ABI = [
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_SUPPLY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

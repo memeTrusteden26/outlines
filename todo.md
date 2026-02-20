@@ -84,12 +84,12 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 
 ## Phase 4: Incentives & Economics
 
-- [ ] **Tokenomics**
-    - [ ] Finalize `LazyToken` supply and distribution logic.
-    - [ ] Define tier thresholds for rewards and fee reductions.
+- [x] **Tokenomics**
+    - [x] Finalize `LazyToken` supply and distribution logic.
+    - [x] Define tier thresholds for rewards and fee reductions.
 
 - [ ] **Advanced Features**
-    - [ ] Implement "Kickbacks" (fee reduction for high-rep workers).
+    - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [ ] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
     - [ ] Community governance for arbitrator rotation.
 

@@ -74,4 +74,8 @@ contract ReputationRegistry is AccessControl {
     function getWorkerHistory(address _worker) external view returns (JobRecord[] memory) {
         return workerHistory[_worker];
     }
+
+    function getJobCount(address _worker) external view returns (uint256) {
+        return workerHistory[_worker].length;
+    }
 }

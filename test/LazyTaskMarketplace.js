@@ -75,8 +75,10 @@ describe("LazyTaskMarketplace", function () {
     // Actually we can do expect(tx).to.emit... because tx is the response.
 
     // Verify worker got bounty + bond
+    // Note: 5% platform fee is deducted from bounty for Tier 0 worker
+    const fee = (bounty * 500n) / 10000n;
     const workerBalanceAfter = await ethers.provider.getBalance(worker.address);
-    expect(workerBalanceAfter).to.equal(workerBalanceBefore + bounty + bond);
+    expect(workerBalanceAfter).to.equal(workerBalanceBefore + (bounty - fee) + bond);
 
     // Verify rewards
     expect(await rewardEngine.balanceOf(worker.address)).to.equal(ethers.parseEther("100"));

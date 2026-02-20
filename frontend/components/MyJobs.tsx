@@ -173,6 +173,18 @@ export function MyJobCardView({
       {filterType === "customer" && jobStatus === 1 && (
         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <label className="block text-sm font-medium mb-2">Complete & Rate Job</label>
+
+          {job[7] && (
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded text-sm break-all">
+              <span className="font-bold">Evidence:</span> {job[7]}
+              {job[7].startsWith("http") && (
+                <a href={job[7]} target="_blank" rel="noreferrer" className="ml-2 text-blue-600 underline">
+                  Open
+                </a>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-2 items-center">
              <select
                value={rating}
