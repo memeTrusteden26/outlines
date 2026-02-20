@@ -72,24 +72,24 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] Integrate RainbowKit/Wagmi for wallet connection.
 
 - [x] **Core Features UI**
-    - [x] **Job Board:** Display available jobs with bounty and bond requirements.
+    - [x] **Job Board:** Display available jobs with bounty, bond requirements, and category filtering.
     - [x] **Post Job:** Form to create new tasks (or chat interface integration).
-    - [ ] **My Jobs:** Dashboard for customers (active jobs) and workers (accepted jobs).
-    - [ ] **Profile/Reputation:** Display worker reputation score and history.
+    - [x] **My Jobs:** Dashboard for customers (active jobs) and workers (accepted jobs).
+    - [x] **Profile/Reputation:** Display worker reputation score and history.
 
-- [ ] **Interaction Flows**
-    - [ ] Implement "Accept Job" flow (approve bond token -> stake).
-    - [ ] Implement "Submit Evidence" flow (upload photo -> IPFS -> submit hash).
-    - [ ] Implement "Complete/Rate" flow for customers.
+- [x] **Interaction Flows**
+    - [x] Implement "Accept Job" flow (approve bond token -> stake).
+    - [x] Implement "Submit Evidence" flow (upload photo -> IPFS -> submit hash).
+    - [x] Implement "Complete/Rate" flow for customers.
 
 ## Phase 4: Incentives & Economics
 
-- [ ] **Tokenomics**
-    - [ ] Finalize `LazyToken` supply and distribution logic.
-    - [ ] Define tier thresholds for rewards and fee reductions.
+- [x] **Tokenomics**
+    - [x] Finalize `LazyToken` supply and distribution logic.
+    - [x] Define tier thresholds for rewards and fee reductions.
 
 - [ ] **Advanced Features**
-    - [ ] Implement "Kickbacks" (fee reduction for high-rep workers).
+    - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [ ] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
     - [ ] Community governance for arbitrator rotation.
 

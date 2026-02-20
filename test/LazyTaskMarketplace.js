@@ -75,8 +75,10 @@ describe("LazyTaskMarketplace", function () {
     // Actually we can do expect(tx).to.emit... because tx is the response.
 
     // Verify worker got bounty + bond
+    // Note: 5% platform fee is deducted from bounty for Tier 0 worker
+    const fee = (bounty * 500n) / 10000n;
     const workerBalanceAfter = await ethers.provider.getBalance(worker.address);
-    expect(workerBalanceAfter).to.equal(workerBalanceBefore + bounty + bond);
+    expect(workerBalanceAfter).to.equal(workerBalanceBefore + (bounty - fee) + bond);
 
     // Verify rewards
     expect(await rewardEngine.balanceOf(worker.address)).to.equal(ethers.parseEther("100"));
@@ -127,5 +129,19 @@ describe("LazyTaskMarketplace", function () {
 
     const job = await marketplace.jobs(0);
     expect(job.status).to.equal(4); // Rejected
+  });
+
+  it("Should return active job types correctly", async function () {
+    const bond = ethers.parseEther("0.1");
+    const bounty = ethers.parseEther("1.0");
+
+    await marketplace.connect(customer).postJob("Cleaning", bond, { value: bounty });
+    await marketplace.connect(customer).postJob("Programming", bond, { value: bounty });
+    await marketplace.connect(customer).postJob("Cleaning", bond, { value: bounty }); // Duplicate type
+
+    const types = await marketplace.getActiveJobTypes();
+    expect(types.length).to.equal(2);
+    expect(types[0]).to.equal("Cleaning");
+    expect(types[1]).to.equal("Programming");
   });
 });

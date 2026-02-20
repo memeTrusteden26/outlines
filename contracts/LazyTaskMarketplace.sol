@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 interface IReputationRegistry {
     function recordJob(address _worker, uint256 _jobId, uint8 _rating, uint256 _bounty) external;
     function checkEligibility(address _worker, string memory _jobType) external view returns (bool);
+    function reputationScores(address _worker) external view returns (uint256);
+    function getJobCount(address _worker) external view returns (uint256);
 }
 
 interface IRewardEngine {
@@ -26,23 +28,30 @@ contract LazyTaskMarketplace is AccessControl {
         uint256 timestamp;
         string jobType;
         JobStatus status;
+        string evidenceHash;
     }
 
     mapping(uint256 => Job) public jobs;
     uint256 public nextJobId;
     address public reputationRegistry;
     address public rewardEngine;
+    address public treasury;
+    uint256 public platformFeeBps = 500; // 5%
+    string[] public activeJobTypes;
 
     event JobPosted(uint256 indexed jobId, address indexed customer, uint256 bounty, uint256 bondRequired);
     event JobAccepted(uint256 indexed jobId, address indexed worker);
     event JobCompleted(uint256 indexed jobId, address indexed worker, uint8 rating);
     event JobDisputed(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
+    event EvidenceSubmitted(uint256 indexed jobId, address indexed worker, string evidenceHash);
+    event FeeTaken(uint256 indexed jobId, uint256 fee, uint256 workerEarnings);
 
     constructor(address _reputationRegistry, address _rewardEngine) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         reputationRegistry = _reputationRegistry;
         rewardEngine = _rewardEngine;
+        treasury = msg.sender;
     }
 
     function postJob(string memory _jobType, uint256 _bondRequired) public payable {
@@ -55,9 +64,26 @@ contract LazyTaskMarketplace is AccessControl {
             workerBond: _bondRequired,
             timestamp: block.timestamp,
             jobType: _jobType,
-            status: JobStatus.Posted
+            status: JobStatus.Posted,
+            evidenceHash: ""
         });
+
+        bool typeExists = false;
+        for (uint256 i = 0; i < activeJobTypes.length; i++) {
+            if (keccak256(bytes(activeJobTypes[i])) == keccak256(bytes(_jobType))) {
+                typeExists = true;
+                break;
+            }
+        }
+        if (!typeExists) {
+            activeJobTypes.push(_jobType);
+        }
+
         emit JobPosted(jobId, msg.sender, msg.value, _bondRequired);
+    }
+
+    function getActiveJobTypes() external view returns (string[] memory) {
+        return activeJobTypes;
     }
 
     function acceptJob(uint256 _jobId) public payable {
@@ -74,6 +100,14 @@ contract LazyTaskMarketplace is AccessControl {
         emit JobAccepted(_jobId, msg.sender);
     }
 
+    function submitEvidence(uint256 _jobId, string memory _evidenceHash) public {
+        Job storage job = jobs[_jobId];
+        require(msg.sender == job.worker, "Only worker");
+        require(job.status == JobStatus.Accepted, "Job not accepted");
+        job.evidenceHash = _evidenceHash;
+        emit EvidenceSubmitted(_jobId, msg.sender, _evidenceHash);
+    }
+
     function completeJob(uint256 _jobId, uint8 _rating) public {
         Job storage job = jobs[_jobId];
         require(msg.sender == job.customer || hasRole(ORACLE_ROLE, msg.sender), "Not authorized");
@@ -81,18 +115,40 @@ contract LazyTaskMarketplace is AccessControl {
 
         job.status = JobStatus.Completed;
 
+        // Calculate Fee with Kickbacks
+        uint256 score = IReputationRegistry(reputationRegistry).reputationScores(job.worker);
+        uint256 count = IReputationRegistry(reputationRegistry).getJobCount(job.worker);
+        uint256 feeBps = platformFeeBps;
+
+        if (score >= 450 && count >= 5) {
+            feeBps = 0; // Platinum: 0% fee
+        } else if (score >= 400 && count >= 3) {
+            feeBps = 250; // Gold: 2.5% fee
+        }
+
+        uint256 fee = (job.bounty * feeBps) / 10000;
+        uint256 workerEarnings = job.bounty - fee;
+
         // Transfer bounty to worker
-        payable(job.worker).transfer(job.bounty);
+        (bool success, ) = payable(job.worker).call{value: workerEarnings}("");
+        require(success, "Transfer failed");
+
+        if (fee > 0) {
+            (bool feeSuccess, ) = payable(treasury).call{value: fee}("");
+            require(feeSuccess, "Fee transfer failed");
+        }
 
         // Return bond to worker
         if (job.workerBond > 0) {
-            payable(job.worker).transfer(job.workerBond);
+            (bool bondSuccess, ) = payable(job.worker).call{value: job.workerBond}("");
+            require(bondSuccess, "Bond transfer failed");
         }
 
         IReputationRegistry(reputationRegistry).recordJob(job.worker, _jobId, _rating, job.bounty);
         IRewardEngine(rewardEngine).issueRewards(job.worker, _rating);
 
         emit JobCompleted(_jobId, job.worker, _rating);
+        emit FeeTaken(_jobId, fee, workerEarnings);
     }
 
     function disputeJob(uint256 _jobId, string memory _evidenceHash) public {
@@ -112,14 +168,16 @@ contract LazyTaskMarketplace is AccessControl {
         uint256 bond = job.workerBond;
         if (bond > 0) {
             // Slash bond: send to customer as compensation
-            payable(job.customer).transfer(bond);
+            (bool success, ) = payable(job.customer).call{value: bond}("");
+            require(success, "Bond transfer failed");
             // Also slash tokens
             try IRewardEngine(rewardEngine).slash(job.worker, bond) {} catch {}
         }
 
         // Refund bounty to customer (since job is failed/slashed)
         if (job.bounty > 0) {
-            payable(job.customer).transfer(job.bounty);
+            (bool success, ) = payable(job.customer).call{value: job.bounty}("");
+            require(success, "Bounty refund failed");
         }
 
         job.status = JobStatus.Rejected;
