@@ -33,4 +33,8 @@ module.exports = {
       },
     ],
   },
+    localhost: {
+      url: "http://localhost:8545",
+    },
+  }
 };
