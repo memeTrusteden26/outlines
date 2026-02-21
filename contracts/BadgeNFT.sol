@@ -45,11 +45,11 @@ contract BadgeNFT is ERC721, AccessControl {
     }
 
     // Soulbound Implementation: Block transfers
-    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
+    function transferFrom(address /*from*/, address /*to*/, uint256 /*tokenId*/) public virtual override {
         revert("BadgeNFT: Soulbound token cannot be transferred");
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override {
+    function safeTransferFrom(address /*from*/, address /*to*/, uint256 /*tokenId*/, bytes memory /*data*/) public virtual override {
         revert("BadgeNFT: Soulbound token cannot be transferred");
     }
 

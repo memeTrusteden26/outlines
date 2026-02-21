@@ -106,4 +106,4 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 
 - [ ] **Launch Preparation**
     - [ ] Final end-to-end testing on testnet.
-    - [ ] Prepare demo flow (Lazy message -> Agent post -> Worker accept -> Agent verify).
+    - [x] Prepare demo flow (Lazy message -> Agent post -> Worker accept -> Agent verify).
