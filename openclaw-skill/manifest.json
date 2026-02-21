@@ -1,0 +1,63 @@
+{
+  "name": "lazyTaskMarketplace",
+  "version": "1.0.0",
+  "description": "LazyTask Marketplace agent skills for OpenClaw - AI-powered job verification and marketplace management",
+  "skills": [
+    {
+      "name": "postJob",
+      "description": "Post a new job/bounty to the LazyTask Marketplace",
+      "trigger": "message contains 'post job' or 'create bounty'",
+      "action": "executes scripts/agent-skills/postJob.js"
+    },
+    {
+      "name": "verifyJob",
+      "description": "Verify job completion using AI vision analysis and complete/reject the job",
+      "trigger": "message contains 'verify' and jobId",
+      "action": "executes scripts/agent-skills/verifyJob.js with AI vision"
+    },
+    {
+      "name": "workerActions",
+      "description": "Accept jobs, submit work evidence, and claim bounties",
+      "trigger": "message contains 'accept job' or 'submit work' or 'claim'",
+      "action": "executes scripts/agent-skills/workerActions.js"
+    },
+    {
+      "name": "walletManager",
+      "description": "Manage agent wallet and check balances",
+      "trigger": "message contains 'wallet' or 'balance' or 'funds'",
+      "action": "executes scripts/agent-skills/walletManager.js"
+    }
+  ],
+  "tools": [
+    {
+      "name": "callContract",
+      "description": "Call a smart contract function",
+      "parameters": {
+        "contractAddress": "string",
+        "functionName": "string",
+        "args": "array"
+      }
+    },
+    {
+      "name": "analyzeImage",
+      "description": "Use AI vision to analyze image evidence for job verification",
+      "parameters": {
+        "imageUrl": "string",
+        "taskType": "string"
+      }
+    }
+  ],
+  "configuration": {
+    "networks": ["sepolia", "baseSepolia", "base"],
+    "contracts": {
+      "LazyTaskMarketplace": "deployed address from deployments.json",
+      "ReputationRegistry": "deployed address from deployments.json",
+      "RewardEngine": "deployed address from deployments.json"
+    },
+    "environmentVariables": [
+      "PRIVATE_KEY",
+      "OPENAI_API_KEY",
+      "RPC_URL"
+    ]
+  }
+}

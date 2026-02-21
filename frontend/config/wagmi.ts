@@ -1,14 +1,16 @@
 import { createConfig, http } from "wagmi";
-import { hardhat } from "wagmi/chains";
+import { hardhat, base, baseSepolia } from "wagmi/chains";
 import { getDefaultConfig } from "connectkit";
 
 export const config = createConfig(
   getDefaultConfig({
     // Your dApps chains
-    chains: [hardhat],
+    chains: [hardhat, base, baseSepolia],
     transports: {
       // RPC URL for each chain
       [hardhat.id]: http(),
+      [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://mainnet.base.org"),
+      [baseSepolia.id]: http(process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org"),
     },
 
     // Required API Keys
