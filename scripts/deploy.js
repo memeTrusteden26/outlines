@@ -34,6 +34,11 @@ async function main() {
   await setBadgeTx.wait();
   console.log(`   ✅ BadgeNFT set in ReputationRegistry`);
 
+  // Grant MINTER_ROLE to ReputationRegistry in BadgeNFT
+  const MINTER_ROLE = await badgeNFT.MINTER_ROLE();
+  await badgeNFT.grantRole(MINTER_ROLE, reputationRegistryAddress);
+  console.log(`   ✅ Granted MINTER_ROLE to ReputationRegistry`);
+
   // Grant marketplace role to deployer for testing
   const MARKETPLACE_ROLE = await reputationRegistry.MARKETPLACE_ROLE();
   await reputationRegistry.grantRole(MARKETPLACE_ROLE, deployer.address);
@@ -70,6 +75,12 @@ async function main() {
   await lazyTaskMarketplace.grantRole(ORACLE_ROLE, deployer.address);
   await lazyTaskMarketplace.grantRole(ARBITRATOR_ROLE, deployer.address);
   console.log(`   ✅ Granted ORACLE_ROLE and ARBITRATOR_ROLE to deployer`);
+
+  // Grant MARKETPLACE_ROLE to LazyTaskMarketplace in ReputationRegistry & RewardEngine
+  console.log("   🔗 Granting MARKETPLACE_ROLE to LazyTaskMarketplace...");
+  await reputationRegistry.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
+  await rewardEngine.grantRole(marketplaceRole, lazyTaskMarketplaceAddress);
+  console.log(`   ✅ Granted MARKETPLACE_ROLE to LazyTaskMarketplace in both registries`);
 
   // ============================================
   // 5. Deploy ArbitratorGovernance
