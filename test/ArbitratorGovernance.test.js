@@ -27,8 +27,8 @@ describe("ArbitratorGovernance", function () {
 
     // Setup Roles
     // Governance needs admin role on Marketplace to grant roles
-    const DEFAULT_ADMIN_ROLE = await marketplace.DEFAULT_ADMIN_ROLE();
-    await marketplace.grantRole(DEFAULT_ADMIN_ROLE, governance.target);
+    const ARBITRATOR_ADMIN_ROLE = await marketplace.ARBITRATOR_ADMIN_ROLE();
+    await marketplace.grantRole(ARBITRATOR_ADMIN_ROLE, governance.target);
 
     // Mint tokens to admin for voting
     // Grant MARKETPLACE_ROLE to admin to mint via issueRewards
