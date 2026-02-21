@@ -95,7 +95,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
     - [x] Implement "Kickbacks" (fee reduction for high-rep workers).
     - [x] Implement NFT badges for milestones (e.g., "100 Jobs Completed").
     - [x] Implement `ARBITRATOR_ROLE` for dispute resolution (foundation for governance).
-    - [ ] Community governance for arbitrator rotation.
+    - [x] Community governance for arbitrator rotation.
 
 ## Phase 5: Documentation & Launch
 
@@ -106,4 +106,4 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 
 - [ ] **Launch Preparation**
     - [ ] Final end-to-end testing on testnet.
-    - [ ] Prepare demo flow (Lazy message -> Agent post -> Worker accept -> Agent verify).
+    - [x] Prepare demo flow (Lazy message -> Agent post -> Worker accept -> Agent verify).

@@ -72,9 +72,25 @@ async function main() {
   console.log(`   ✅ Granted ORACLE_ROLE and ARBITRATOR_ROLE to deployer`);
 
   // ============================================
-  // 5. Deploy AgentSubscription (standalone)
+  // 5. Deploy ArbitratorGovernance
   // ============================================
-  console.log("\n5️⃣ Deploying AgentSubscription...");
+  console.log("\n5️⃣ Deploying ArbitratorGovernance...");
+  const ArbitratorGovernance = await ethers.getContractFactory("ArbitratorGovernance");
+  // ArbitratorGovernance(address _token, address _marketplace)
+  const arbitratorGovernance = await ArbitratorGovernance.deploy(rewardEngineAddress, lazyTaskMarketplaceAddress);
+  await arbitratorGovernance.waitForDeployment();
+  const arbitratorGovernanceAddress = await arbitratorGovernance.getAddress();
+  console.log(`   ✅ ArbitratorGovernance deployed at: ${arbitratorGovernanceAddress}`);
+
+  // Grant ARBITRATOR_ADMIN_ROLE to governance contract
+  const ARBITRATOR_ADMIN_ROLE = await lazyTaskMarketplace.ARBITRATOR_ADMIN_ROLE();
+  await lazyTaskMarketplace.grantRole(ARBITRATOR_ADMIN_ROLE, arbitratorGovernanceAddress);
+  console.log(`   ✅ Granted ARBITRATOR_ADMIN_ROLE to ArbitratorGovernance`);
+
+  // ============================================
+  // 6. Deploy AgentSubscription (standalone)
+  // ============================================
+  console.log("\n6️⃣ Deploying AgentSubscription...");
   const AgentSubscription = await ethers.getContractFactory("AgentSubscription");
   const agentSubscription = await AgentSubscription.deploy();
   await agentSubscription.waitForDeployment();
@@ -82,9 +98,9 @@ async function main() {
   console.log(`   ✅ AgentSubscription deployed at: ${agentSubscriptionAddress}`);
 
   // ============================================
-  // 6. Deploy AgenticOperation (standalone)
+  // 7. Deploy AgenticOperation (standalone)
   // ============================================
-  console.log("\n6️⃣ Deploying AgenticOperation...");
+  console.log("\n7️⃣ Deploying AgenticOperation...");
   const AgenticOperation = await ethers.getContractFactory("AgenticOperation");
   const agenticOperation = await AgenticOperation.deploy();
   await agenticOperation.waitForDeployment();
@@ -92,9 +108,9 @@ async function main() {
   console.log(`   ✅ AgenticOperation deployed at: ${agenticOperationAddress}`);
 
   // ============================================
-  // 7. Deploy PerRequestPayment (standalone)
+  // 8. Deploy PerRequestPayment (standalone)
   // ============================================
-  console.log("\n7️⃣ Deploying PerRequestPayment...");
+  console.log("\n8️⃣ Deploying PerRequestPayment...");
   const PerRequestPayment = await ethers.getContractFactory("PerRequestPayment");
   const perRequestPayment = await PerRequestPayment.deploy();
   await perRequestPayment.waitForDeployment();
@@ -111,6 +127,7 @@ async function main() {
   console.log(`ReputationRegistry:   ${reputationRegistryAddress}`);
   console.log(`RewardEngine:         ${rewardEngineAddress}`);
   console.log(`LazyTaskMarketplace:  ${lazyTaskMarketplaceAddress}`);
+  console.log(`ArbitratorGovernance: ${arbitratorGovernanceAddress}`);
   console.log(`AgentSubscription:    ${agentSubscriptionAddress}`);
   console.log(`AgenticOperation:     ${agenticOperationAddress}`);
   console.log(`PerRequestPayment:    ${perRequestPaymentAddress}`);
@@ -123,6 +140,7 @@ async function main() {
     ReputationRegistry: reputationRegistryAddress,
     RewardEngine: rewardEngineAddress,
     LazyTaskMarketplace: lazyTaskMarketplaceAddress,
+    ArbitratorGovernance: arbitratorGovernanceAddress,
     AgentSubscription: agentSubscriptionAddress,
     AgenticOperation: agenticOperationAddress,
     PerRequestPayment: perRequestPaymentAddress,

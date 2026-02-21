@@ -2,9 +2,11 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract RewardEngine is ERC20, AccessControl {
+contract RewardEngine is ERC20, ERC20Permit, ERC20Votes, AccessControl {
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
 
     mapping(address => uint256) public creditScores;
@@ -14,7 +16,7 @@ contract RewardEngine is ERC20, AccessControl {
     event TokensSlashed(address indexed worker, uint256 amount);
     event CreditUpdated(address indexed worker, uint256 newScore);
 
-    constructor() ERC20("LazyToken", "LAZY") {
+    constructor() ERC20("LazyToken", "LAZY") ERC20Permit("LazyToken") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -46,5 +48,15 @@ contract RewardEngine is ERC20, AccessControl {
     function slash(address _worker, uint256 _amount) external onlyRole(MARKETPLACE_ROLE) {
         _burn(_worker, _amount);
         emit TokensSlashed(_worker, _amount);
+    }
+
+    // Overrides required by Solidity
+
+    function _update(address from, address to, uint256 value) internal override(ERC20, ERC20Votes) {
+        super._update(from, to, value);
+    }
+
+    function nonces(address owner) public view override(ERC20Permit, Nonces) returns (uint256) {
+        return super.nonces(owner);
     }
 }

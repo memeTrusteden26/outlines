@@ -19,6 +19,7 @@ interface IRewardEngine {
 contract LazyTaskMarketplace is AccessControl {
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
     bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
+    bytes32 public constant ARBITRATOR_ADMIN_ROLE = keccak256("ARBITRATOR_ADMIN_ROLE");
 
     enum JobStatus { Posted, Accepted, Completed, Disputed, Rejected }
 
@@ -53,6 +54,8 @@ contract LazyTaskMarketplace is AccessControl {
 
     constructor(address _reputationRegistry, address _rewardEngine) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setRoleAdmin(ARBITRATOR_ROLE, ARBITRATOR_ADMIN_ROLE);
+        _grantRole(ARBITRATOR_ADMIN_ROLE, msg.sender);
         _grantRole(ARBITRATOR_ROLE, msg.sender);
         reputationRegistry = _reputationRegistry;
         rewardEngine = _rewardEngine;
