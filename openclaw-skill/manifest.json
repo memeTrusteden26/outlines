@@ -26,6 +26,12 @@
       "description": "Manage agent wallet and check balances",
       "trigger": "message contains 'wallet' or 'balance' or 'funds'",
       "action": "executes scripts/agent-skills/walletManager.js"
+    },
+    {
+      "name": "x402Payments",
+      "description": "Handle x402 micropayments for agent verification services",
+      "trigger": "message contains 'payment' or 'withdraw' or 'get paid'",
+      "action": "executes scripts/agent-services/x402-payment.js"
     }
   ],
   "tools": [
