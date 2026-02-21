@@ -98,6 +98,13 @@ contract LizardLounge is AccessControl {
         emit JobMessage(_jobId, msg.sender, _content, block.timestamp);
     }
 
+    // Job-Specific Chat (Private between Customer and Worker)
+    function postJobMessage(uint256 _jobId, string memory _content) external {
+        (address customer, address worker, , , , , , ) = ILazyTaskMarketplace(marketplace).jobs(_jobId);
+        require(msg.sender == customer || msg.sender == worker, "Not authorized for this job chat");
+        emit JobMessage(_jobId, msg.sender, _content, block.timestamp);
+    }
+
     // --- Table Management ---
 
     function createTable(string memory _name, string memory _topic) external returns (uint256) {
