@@ -7,6 +7,6 @@
   "AgenticOperation": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
   "PerRequestPayment": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
   "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "network": "localhost",
-  "timestamp": "2026-02-21T05:27:46.718Z"
+  "network": "hardhat",
+  "timestamp": "2026-02-21T08:29:08.554Z"
 }
