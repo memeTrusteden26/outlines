@@ -29,6 +29,13 @@ async function main() {
   const badgeNFTAddress = await badgeNFT.getAddress();
   console.log("BadgeNFT deployed to:", badgeNFTAddress);
 
+  // 3.5 Deploy LizardToken (Lizard Lab)
+  const LizardToken = await hre.ethers.getContractFactory("LizardToken");
+  const lizardToken = await LizardToken.deploy();
+  await lizardToken.waitForDeployment();
+  const lizardTokenAddress = await lizardToken.getAddress();
+  console.log("LizardToken deployed to:", lizardTokenAddress);
+
   // 4. Deploy LazyTaskMarketplace
   const LazyTaskMarketplace = await hre.ethers.getContractFactory("LazyTaskMarketplace");
   const lazyTaskMarketplace = await LazyTaskMarketplace.deploy(
@@ -41,7 +48,8 @@ async function main() {
 
   // 5. Deploy LizardLounge
   const LizardLounge = await hre.ethers.getContractFactory("LizardLounge");
-  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress);
+  // Updated constructor to accept LizardToken address
+  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress, lizardTokenAddress);
   await lizardLounge.waitForDeployment();
   const lizardLoungeAddress = await lizardLounge.getAddress();
   console.log("LizardLounge deployed to:", lizardLoungeAddress);
@@ -66,6 +74,7 @@ async function main() {
   const lazyTaskMarketplaceArtifact = await hre.artifacts.readArtifact("LazyTaskMarketplace");
   const badgeNFTArtifact = await hre.artifacts.readArtifact("BadgeNFT");
   const lizardLoungeArtifact = await hre.artifacts.readArtifact("LizardLounge");
+  const lizardTokenArtifact = await hre.artifacts.readArtifact("LizardToken");
 
   const configContent = `
 export const LAZY_TASK_MARKETPLACE_ADDRESS = "${lazyTaskMarketplaceAddress}";
@@ -82,6 +91,9 @@ export const BADGE_NFT_ABI = ${JSON.stringify(badgeNFTArtifact.abi, null, 2)} as
 
 export const LIZARD_LOUNGE_ADDRESS = "${lizardLoungeAddress}";
 export const LIZARD_LOUNGE_ABI = ${JSON.stringify(lizardLoungeArtifact.abi, null, 2)} as const;
+
+export const LIZARD_TOKEN_ADDRESS = "${lizardTokenAddress}";
+export const LIZARD_TOKEN_ABI = ${JSON.stringify(lizardTokenArtifact.abi, null, 2)} as const;
 `;
 
   const configPath = path.join(__dirname, "../frontend/config/contracts.ts");

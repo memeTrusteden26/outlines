@@ -13,9 +13,11 @@ interface SidebarProps {
   onSelectTable: (id: number) => void;
   onCreateTable: (name: string, topic: string) => void;
   isCreating: boolean;
+  onOpenLab: () => void;
+  isLabOpen: boolean;
 }
 
-export default function Sidebar({ tables, activeTableId, onSelectTable, onCreateTable, isCreating }: SidebarProps) {
+export default function Sidebar({ tables, activeTableId, onSelectTable, onCreateTable, isCreating, onOpenLab, isLabOpen }: SidebarProps) {
   const [newName, setNewName] = useState("");
   const [newTopic, setNewTopic] = useState("");
   const [showCreate, setShowCreate] = useState(false);
@@ -31,13 +33,19 @@ export default function Sidebar({ tables, activeTableId, onSelectTable, onCreate
 
   return (
     <div className="w-64 bg-gray-800 text-white flex flex-col h-full border-r border-gray-700">
-      <div className="p-4 border-b border-gray-700 font-bold text-xl flex items-center">
-        <span>🦎 Lizard Lounge</span>
+      <div className="p-4 border-b border-gray-700 font-bold text-xl flex items-center justify-between">
+        <span>🦎 Lounge</span>
+        <button
+            onClick={onOpenLab}
+            className={`text-xs px-2 py-1 rounded border ${isLabOpen ? 'bg-purple-600 border-purple-500' : 'border-gray-600 hover:bg-gray-700'}`}
+        >
+            🧬 Lab
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div
-            className={`p-3 cursor-pointer hover:bg-gray-700 ${activeTableId === 0 ? 'bg-gray-700 border-l-4 border-green-500' : ''}`}
+            className={`p-3 cursor-pointer hover:bg-gray-700 ${!isLabOpen && activeTableId === 0 ? 'bg-gray-700 border-l-4 border-green-500' : ''}`}
             onClick={() => onSelectTable(0)}
         >
             <h3 className="font-bold">Main Lounge</h3>
@@ -49,7 +57,7 @@ export default function Sidebar({ tables, activeTableId, onSelectTable, onCreate
         {tables.map(table => (
             <div
                 key={table.id}
-                className={`p-3 cursor-pointer hover:bg-gray-700 ${activeTableId === Number(table.id) ? 'bg-gray-700 border-l-4 border-green-500' : ''}`}
+                className={`p-3 cursor-pointer hover:bg-gray-700 ${!isLabOpen && activeTableId === Number(table.id) ? 'bg-gray-700 border-l-4 border-green-500' : ''}`}
                 onClick={() => onSelectTable(Number(table.id))}
             >
                 <h3 className="font-bold truncate">#{table.name}</h3>

@@ -5,6 +5,7 @@ interface Message {
   sender: string;
   content: string;
   timestamp: number;
+  lizardName?: string;
 }
 
 interface ChatWindowProps {
@@ -45,6 +46,12 @@ export default function ChatWindow({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        handleSend();
+    }
+  };
+
   const isHost = tableHost?.toLowerCase() === currentUser?.toLowerCase();
 
   // Format time
@@ -55,8 +62,9 @@ export default function ChatWindow({
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-white h-full relative">
         {/* Header */}
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-            <h2 className="font-bold text-lg">
+        <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
+            <h2 className="font-bold text-lg flex items-center">
+                <span className="mr-2">🦎</span>
                 {activeTableId === 0 ? "Main Lounge" : `Table #${activeTableId}`}
             </h2>
             {activeTableId !== 0 && (
@@ -65,35 +73,43 @@ export default function ChatWindow({
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900" ref={scrollRef}>
             {messages.length === 0 && (
-                <div className="text-center text-gray-500 mt-10">No messages yet. Start chatting! 🦎</div>
+                <div className="flex flex-col items-center justify-center h-full text-gray-500 mt-10">
+                    <div className="text-4xl mb-4">🦎</div>
+                    <p>No messages yet. Start chatting!</p>
+                </div>
             )}
             {messages.map((msg, idx) => {
                 const isMe = msg.sender.toLowerCase() === currentUser?.toLowerCase();
                 return (
                     <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                         <div className="flex items-center space-x-2 text-xs text-gray-400 mb-1">
-                            <span className="font-mono">
+                            {msg.lizardName && (
+                                <span className="text-purple-400 font-bold text-xs bg-purple-900/30 px-1 rounded border border-purple-500/30">
+                                    {msg.lizardName}
+                                </span>
+                            )}
+                            <span className="font-mono text-gray-500">
                                 {isMe ? 'You' : `${msg.sender.slice(0, 6)}...`}
                             </span>
-                            <span>
+                            <span className="text-gray-600">
                                 {formatTime(msg.timestamp)}
                             </span>
                             {isHost && !isMe && activeTableId !== 0 && (
                                 <button
                                     onClick={() => onKickMember(activeTableId, msg.sender)}
-                                    className="text-red-500 ml-2 hover:underline"
+                                    className="text-red-500 ml-2 hover:underline text-xs"
                                     title="Kick Member"
                                 >
                                     [Kick]
                                 </button>
                             )}
                         </div>
-                        <div className={`px-4 py-2 rounded-lg max-w-md break-words ${
+                        <div className={`px-4 py-2 rounded-2xl max-w-md break-words shadow-sm ${
                             isMe
                                 ? 'bg-green-600 text-white rounded-br-none'
-                                : 'bg-gray-700 text-gray-200 rounded-bl-none'
+                                : 'bg-gray-800 text-gray-200 rounded-bl-none border border-gray-700'
                         }`}>
                             {msg.content}
                         </div>
@@ -110,23 +126,23 @@ export default function ChatWindow({
                         type="text"
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleSend()}
+                        onKeyDown={handleKeyDown}
                         placeholder={`Message #${activeTableId === 0 ? 'Main Lounge' : activeTableId}...`}
-                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-green-500 transition-colors"
                     />
                     <button
                         onClick={handleSend}
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold transition"
+                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold transition-colors shadow-lg"
                     >
                         Send
                     </button>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center p-4 bg-gray-800 rounded">
-                    <p className="mb-2 text-gray-400">You are viewing a private table.</p>
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-700/50 rounded border border-gray-600">
+                    <p className="mb-2 text-gray-300">You are viewing a private table.</p>
                     <button
                         onClick={() => onJoinTable(activeTableId)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-bold transition"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-bold transition-colors shadow-lg"
                     >
                         Request to Join Table #{activeTableId}
                     </button>

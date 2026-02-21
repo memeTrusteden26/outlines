@@ -2,6 +2,7 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./LizardToken.sol";
 
 interface IReputationRegistry {
     function reputationScores(address _worker) external view returns (uint256);
@@ -22,18 +23,24 @@ contract LizardLounge is AccessControl {
     mapping(uint256 => mapping(address => bool)) public tableMembers;
 
     address public reputationRegistry;
+    LizardToken public lizardToken;
     uint256 public constant MIN_REP_TO_ANNOUNCE = 100; // Minimum score to register a new skill
+
+    mapping(address => uint256) public equippedLizard;
+    mapping(address => bool) public hasEquipped;
 
     event TableCreated(uint256 indexed tableId, string name, address indexed host, string topic);
     event JoinRequested(uint256 indexed tableId, address indexed agent);
     event JoinApproved(uint256 indexed tableId, address indexed agent);
-    event Message(uint256 indexed tableId, address indexed sender, string content, uint256 timestamp);
+    event Message(uint256 indexed tableId, address indexed sender, string content, uint256 timestamp, string lizardName);
     event SkillAnnounced(address indexed agent, string skill);
     event MemberKicked(uint256 indexed tableId, address indexed agent);
+    event LizardEquipped(address indexed user, uint256 tokenId);
 
-    constructor(address _reputationRegistry) {
+    constructor(address _reputationRegistry, address _lizardToken) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         reputationRegistry = _reputationRegistry;
+        lizardToken = LizardToken(_lizardToken);
     }
 
     // --- Social Features ---
@@ -43,7 +50,29 @@ contract LizardLounge is AccessControl {
         if (_tableId != 0) {
             require(tableMembers[_tableId][msg.sender], "Not a member of this table");
         }
-        emit Message(_tableId, msg.sender, _content, block.timestamp);
+
+        string memory lizardName = "";
+        if (hasEquipped[msg.sender]) {
+            uint256 tokenId = equippedLizard[msg.sender];
+            // verify ownership still holds
+            try lizardToken.ownerOf(tokenId) returns (address owner) {
+                if (owner == msg.sender) {
+                    lizardName = lizardToken.lizardNames(tokenId);
+                }
+            } catch {
+                // Token might not exist or other error, ignore
+            }
+        }
+
+        emit Message(_tableId, msg.sender, _content, block.timestamp, lizardName);
+    }
+
+    // --- Lizard Features ---
+    function equipLizard(uint256 tokenId) external {
+        require(lizardToken.ownerOf(tokenId) == msg.sender, "You do not own this lizard");
+        equippedLizard[msg.sender] = tokenId;
+        hasEquipped[msg.sender] = true;
+        emit LizardEquipped(msg.sender, tokenId);
     }
 
     // --- Table Management ---

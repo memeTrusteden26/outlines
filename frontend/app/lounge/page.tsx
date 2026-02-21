@@ -6,6 +6,7 @@ import { LIZARD_LOUNGE_ADDRESS, LIZARD_LOUNGE_ABI } from '@/config/contracts';
 import Sidebar from '@/components/Lounge/Sidebar';
 import ChatWindow from '@/components/Lounge/ChatWindow';
 import SkillAnnouncer from '@/components/Lounge/SkillAnnouncer';
+import LizardLab from '@/components/LizardLab/LizardLab';
 
 interface Table {
     id: number;
@@ -19,6 +20,7 @@ interface Message {
     sender: string;
     content: string;
     timestamp: number;
+    lizardName?: string;
 }
 
 export default function LoungePage() {
@@ -31,6 +33,7 @@ export default function LoungePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMember, setIsMember] = useState(false);
   const [tableHost, setTableHost] = useState<string | undefined>(undefined);
+  const [isLabOpen, setIsLabOpen] = useState(false);
 
   // Load Tables
   useEffect(() => {
@@ -67,9 +70,6 @@ export default function LoungePage() {
 
     const fetchMessages = async () => {
         try {
-            // Filter by tableId requires manual filtering if not indexed?
-            // Indexed args in event: tableId, sender.
-            // So we can use args: { tableId: BigInt(activeTableId) }
             const logs = await publicClient.getContractEvents({
                 address: LIZARD_LOUNGE_ADDRESS as `0x${string}`,
                 abi: LIZARD_LOUNGE_ABI,
@@ -82,7 +82,8 @@ export default function LoungePage() {
                 tableId: Number(log.args.tableId),
                 sender: log.args.sender || 'Unknown',
                 content: log.args.content || '',
-                timestamp: Number(log.args.timestamp)
+                timestamp: Number(log.args.timestamp),
+                lizardName: log.args.lizardName || ''
             }));
 
             setMessages(loadedMessages);
@@ -136,7 +137,8 @@ export default function LoungePage() {
                 tableId: Number(log.args.tableId),
                 sender: log.args.sender || 'Unknown',
                 content: log.args.content || '',
-                timestamp: Number(log.args.timestamp) || Math.floor(Date.now()/1000)
+                timestamp: Number(log.args.timestamp) || Math.floor(Date.now()/1000),
+                lizardName: log.args.lizardName || ''
             }));
         if (newMessages.length > 0) {
             setMessages(prev => [...prev, ...newMessages]);
@@ -215,9 +217,14 @@ export default function LoungePage() {
       <Sidebar
         tables={tables}
         activeTableId={activeTableId}
-        onSelectTable={setActiveTableId}
+        onSelectTable={(id) => {
+            setActiveTableId(id);
+            setIsLabOpen(false);
+        }}
         onCreateTable={handleCreateTable}
         isCreating={isPending}
+        onOpenLab={() => setIsLabOpen(true)}
+        isLabOpen={isLabOpen}
       />
 
       <div className="flex-1 flex flex-col relative h-full">
@@ -229,16 +236,22 @@ export default function LoungePage() {
             />
         </div>
 
-        <ChatWindow
-            activeTableId={activeTableId}
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            onJoinTable={handleJoinTable}
-            onKickMember={handleKickMember}
-            isMember={isMember}
-            currentUser={address}
-            tableHost={tableHost}
-        />
+        {isLabOpen ? (
+            <div className="flex-1 overflow-y-auto bg-gray-900 p-8">
+                <LizardLab />
+            </div>
+        ) : (
+            <ChatWindow
+                activeTableId={activeTableId}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                onJoinTable={handleJoinTable}
+                onKickMember={handleKickMember}
+                isMember={isMember}
+                currentUser={address}
+                tableHost={tableHost}
+            />
+        )}
       </div>
     </div>
   );
