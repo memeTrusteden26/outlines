@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+const fs = require("fs");
 
 async function main() {
   console.log("🚀 Deploying LazyTask Marketplace Contracts...\n");
@@ -19,6 +20,16 @@ async function main() {
   console.log(`   ✅ BadgeNFT deployed at: ${badgeNFTAddress}`);
 
   // ============================================
+  // 1.5 Deploy LizardToken (Lizard Lab)
+  // ============================================
+  console.log("\n1️⃣.5️⃣ Deploying LizardToken...");
+  const LizardToken = await ethers.getContractFactory("LizardToken");
+  const lizardToken = await LizardToken.deploy();
+  await lizardToken.waitForDeployment();
+  const lizardTokenAddress = await lizardToken.getAddress();
+  console.log(`   ✅ LizardToken deployed at: ${lizardTokenAddress}`);
+
+  // ============================================
   // 2. Deploy ReputationRegistry (needs BadgeNFT)
   // ============================================
   console.log("\n2️⃣ Deploying ReputationRegistry...");
@@ -33,6 +44,11 @@ async function main() {
   const setBadgeTx = await reputationRegistry.setBadgeNFT(badgeNFTAddress);
   await setBadgeTx.wait();
   console.log(`   ✅ BadgeNFT set in ReputationRegistry`);
+
+  // Grant MINTER_ROLE to ReputationRegistry in BadgeNFT
+  const MINTER_ROLE = await badgeNFT.MINTER_ROLE();
+  await badgeNFT.grantRole(MINTER_ROLE, reputationRegistryAddress);
+  console.log(`   ✅ Granted MINTER_ROLE to ReputationRegistry`);
 
   // Grant marketplace role to deployer for testing
   const MARKETPLACE_ROLE = await reputationRegistry.MARKETPLACE_ROLE();
@@ -70,6 +86,28 @@ async function main() {
   await lazyTaskMarketplace.grantRole(ORACLE_ROLE, deployer.address);
   await lazyTaskMarketplace.grantRole(ARBITRATOR_ROLE, deployer.address);
   console.log(`   ✅ Granted ORACLE_ROLE and ARBITRATOR_ROLE to deployer`);
+
+  // Grant MARKETPLACE_ROLE to LazyTaskMarketplace in ReputationRegistry & RewardEngine
+  console.log("   🔗 Granting MARKETPLACE_ROLE to LazyTaskMarketplace...");
+  await reputationRegistry.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
+  await rewardEngine.grantRole(marketplaceRole, lazyTaskMarketplaceAddress);
+  console.log(`   ✅ Granted MARKETPLACE_ROLE to LazyTaskMarketplace in both registries`);
+
+  // ============================================
+  // 4.5 Deploy LizardLounge
+  // ============================================
+  console.log("\n4️⃣.5️⃣ Deploying LizardLounge...");
+  const LizardLounge = await ethers.getContractFactory("LizardLounge");
+  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress, lizardTokenAddress);
+  await lizardLounge.waitForDeployment();
+  const lizardLoungeAddress = await lizardLounge.getAddress();
+  console.log(`   ✅ LizardLounge deployed at: ${lizardLoungeAddress}`);
+
+  // Grant SKILL_REGISTRY_ROLE to LizardLounge in ReputationRegistry
+  const SKILL_REGISTRY_ROLE = await reputationRegistry.SKILL_REGISTRY_ROLE();
+  await reputationRegistry.grantRole(SKILL_REGISTRY_ROLE, lizardLoungeAddress);
+  console.log(`   ✅ Granted SKILL_REGISTRY_ROLE to LizardLounge`);
+
 
   // ============================================
   // 5. Deploy ArbitratorGovernance
@@ -124,9 +162,11 @@ async function main() {
   console.log("📋 DEPLOYMENT SUMMARY");
   console.log("=".repeat(60));
   console.log(`BadgeNFT:             ${badgeNFTAddress}`);
+  console.log(`LizardToken:          ${lizardTokenAddress}`);
   console.log(`ReputationRegistry:   ${reputationRegistryAddress}`);
   console.log(`RewardEngine:         ${rewardEngineAddress}`);
   console.log(`LazyTaskMarketplace:  ${lazyTaskMarketplaceAddress}`);
+  console.log(`LizardLounge:         ${lizardLoungeAddress}`);
   console.log(`ArbitratorGovernance: ${arbitratorGovernanceAddress}`);
   console.log(`AgentSubscription:    ${agentSubscriptionAddress}`);
   console.log(`AgenticOperation:     ${agenticOperationAddress}`);
@@ -134,12 +174,13 @@ async function main() {
   console.log("=".repeat(60));
 
   // Save addresses to a file for frontend usage
-  const fs = require("fs");
   const addresses = {
     BadgeNFT: badgeNFTAddress,
+    LizardToken: lizardTokenAddress,
     ReputationRegistry: reputationRegistryAddress,
     RewardEngine: rewardEngineAddress,
     LazyTaskMarketplace: lazyTaskMarketplaceAddress,
+    LizardLounge: lizardLoungeAddress,
     ArbitratorGovernance: arbitratorGovernanceAddress,
     AgentSubscription: agentSubscriptionAddress,
     AgenticOperation: agenticOperationAddress,
