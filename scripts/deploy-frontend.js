@@ -39,7 +39,14 @@ async function main() {
   const lazyTaskMarketplaceAddress = await lazyTaskMarketplace.getAddress();
   console.log("LazyTaskMarketplace deployed to:", lazyTaskMarketplaceAddress);
 
-  // 5. Grant Roles & Setup
+  // 5. Deploy LizardLounge
+  const LizardLounge = await hre.ethers.getContractFactory("LizardLounge");
+  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress);
+  await lizardLounge.waitForDeployment();
+  const lizardLoungeAddress = await lizardLounge.getAddress();
+  console.log("LizardLounge deployed to:", lizardLoungeAddress);
+
+  // 6. Grant Roles & Setup
   const MARKETPLACE_ROLE = await reputationRegistry.MARKETPLACE_ROLE();
   await reputationRegistry.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
   await rewardEngine.grantRole(MARKETPLACE_ROLE, lazyTaskMarketplaceAddress);
@@ -47,13 +54,18 @@ async function main() {
   const MINTER_ROLE = await badgeNFT.MINTER_ROLE();
   await badgeNFT.grantRole(MINTER_ROLE, reputationRegistryAddress);
   await reputationRegistry.setBadgeNFT(badgeNFTAddress);
+
+  const SKILL_REGISTRY_ROLE = await reputationRegistry.SKILL_REGISTRY_ROLE();
+  await reputationRegistry.grantRole(SKILL_REGISTRY_ROLE, lizardLoungeAddress);
+
   console.log("Roles and BadgeNFT setup complete.");
 
-  // 6. Generate Config
+  // 7. Generate Config
   const reputationRegistryArtifact = await hre.artifacts.readArtifact("ReputationRegistry");
   const rewardEngineArtifact = await hre.artifacts.readArtifact("RewardEngine");
   const lazyTaskMarketplaceArtifact = await hre.artifacts.readArtifact("LazyTaskMarketplace");
   const badgeNFTArtifact = await hre.artifacts.readArtifact("BadgeNFT");
+  const lizardLoungeArtifact = await hre.artifacts.readArtifact("LizardLounge");
 
   const configContent = `
 export const LAZY_TASK_MARKETPLACE_ADDRESS = "${lazyTaskMarketplaceAddress}";
@@ -67,6 +79,9 @@ export const REWARD_ENGINE_ABI = ${JSON.stringify(rewardEngineArtifact.abi, null
 
 export const BADGE_NFT_ADDRESS = "${badgeNFTAddress}";
 export const BADGE_NFT_ABI = ${JSON.stringify(badgeNFTArtifact.abi, null, 2)} as const;
+
+export const LIZARD_LOUNGE_ADDRESS = "${lizardLoungeAddress}";
+export const LIZARD_LOUNGE_ABI = ${JSON.stringify(lizardLoungeArtifact.abi, null, 2)} as const;
 `;
 
   const configPath = path.join(__dirname, "../frontend/config/contracts.ts");
