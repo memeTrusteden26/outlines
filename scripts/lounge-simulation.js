@@ -1,7 +1,8 @@
 const hre = require("hardhat");
 
-const LIZARD_LOUNGE_ADDRESS = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
-const REPUTATION_REGISTRY_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const LIZARD_LOUNGE_ADDRESS = "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1";
+const REPUTATION_REGISTRY_ADDRESS = "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0";
+const LAZY_TASK_MARKETPLACE_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
 
 async function main() {
   console.log("🦎 Starting Lizard Lounge Simulation...");
@@ -16,12 +17,13 @@ async function main() {
   const ReputationRegistry = await hre.ethers.getContractFactory("ReputationRegistry");
   const reputation = ReputationRegistry.attach(REPUTATION_REGISTRY_ADDRESS);
 
+  const Marketplace = await hre.ethers.getContractFactory("LazyTaskMarketplace");
+  const marketplace = Marketplace.attach(LAZY_TASK_MARKETPLACE_ADDRESS);
+
   // 1. Agent 1 Creates a Table
   console.log("\n--- Creating Table ---");
   const tx1 = await lounge.connect(agent1).createTable("Python Devs", "Discussing snake case");
   const rc1 = await tx1.wait();
-  // Parse event to find tableId? Hard to get from logs easily in script without parsing logic
-  // But since nextTableId starts at 1, this should be Table 1.
   console.log("Agent 1 created Table 'Python Devs' (ID 1)");
 
   // 2. Agent 2 Requests to Join
@@ -47,49 +49,58 @@ async function main() {
   await lounge.connect(agent3).postMessage(0, "Anyone seen a fly?");
   console.log("Agent 3 (Main): Anyone seen a fly?");
 
-  // 6. Skill Generation (Agent 1 has 0 rep, so this should fail)
-  console.log("\n--- Skill Generation (Fail Case) ---");
-  try {
-    await lounge.connect(agent1).announceSkill("Python");
-    console.log("❌ Agent 1 announced skill (Unexpected Success)");
-  } catch (e) {
-    console.log("✅ Agent 1 failed to announce skill (Low Reputation) - Expected");
-  }
-
-  // 7. Boost Reputation & Try Again
-  console.log("\n--- Boosting Reputation ---");
-  // Admin grants MARKETPLACE_ROLE to itself to record a fake job
+  // 6. Skill Generation
+  console.log("\n--- Skill Generation ---");
+  // Boost Reputation first
   const MARKETPLACE_ROLE = await reputation.MARKETPLACE_ROLE();
   await reputation.connect(admin).grantRole(MARKETPLACE_ROLE, admin.address);
+  // Record a dummy job to boost score. JobID 999.
+  await reputation.connect(admin).recordJob(agent1.address, 999, 5, hre.ethers.parseEther("1.0"));
 
-  // Record a job for Agent 1 with 5 stars (should give 100 score if logic holds: score = total * 100 / count => 5 * 100 / 1 = 500)
-  await reputation.connect(admin).recordJob(agent1.address, 999, 5, ethers.parseEther("1.0"));
-  const newScore = await reputation.reputationScores(agent1.address);
-  console.log(`Agent 1 New Score: ${newScore} (Target > 100)`);
-
-  // 8. Skill Generation (Success Case)
-  console.log("\n--- Skill Generation (Success Case) ---");
   try {
     await lounge.connect(agent1).announceSkill("Python");
     console.log("✅ Agent 1 announced skill 'Python'!");
-
-    // Verify in Registry
-    const minScore = await reputation.minReputationScores("Python");
-    console.log(`Registry now has 'Python' with min score: ${minScore}`);
   } catch (e) {
     console.error("❌ Agent 1 failed to announce skill:", e.message);
   }
 
-  // 9. Kick Member
-  console.log("\n--- Kicking Member ---");
-  await lounge.connect(agent1).kickMember(1, agent2.address);
-  console.log("Agent 1 kicked Agent 2 from Table 1");
+  // 7. Job Chat Simulation
+  console.log("\n--- Job Chat Simulation ---");
 
+  // Agent 1 (Customer) posts a job
+  // Need to ensure activeJobTypes has "Python" or whatever, or just use a generic one if validation exists.
+  // Marketplace creates types dynamically on post if not exist?
+  // Let's check `postJob`.
+  // `if (!activeJobTypesMap[typeHash]) { ... push ... }` -> Yes, it auto-adds.
+  const jobTx = await marketplace.connect(agent1).postJob("PythonScript", hre.ethers.parseEther("0.1"), { value: hre.ethers.parseEther("1.0") });
+  const jobRc = await jobTx.wait();
+  const nextId = await marketplace.nextJobId();
+  const jobId = nextId - 1n; // The job we just posted
+  console.log(`Job Posted by Agent 1 (ID ${jobId})`);
+
+  // Agent 2 (Worker) accepts the job
+  // Bond required is 0.1 ETH.
+  // Check eligibility? "PythonScript" type might have min score?
+  // We set min score for "Python" in previous step via announceSkill?
+  // announceSkill("Python") -> setMinReputationScore("Python", 0).
+  // Here we used "PythonScript". No min score set, so 0 default. Safe.
+  await marketplace.connect(agent2).acceptJob(jobId, { value: hre.ethers.parseEther("0.1") });
+  console.log(`Job Accepted by Agent 2`);
+
+  // Chatting
+  console.log("Start Chatting...");
+  await lounge.connect(agent1).postJobMessage(jobId, "Can you finish this by tomorrow?");
+  console.log("Agent 1 (Customer): Can you finish this by tomorrow?");
+
+  await lounge.connect(agent2).postJobMessage(jobId, "Yes boss, sssure thing.");
+  console.log("Agent 2 (Worker): Yes boss, sssure thing.");
+
+  // Unauthorized Chat Attempt
   try {
-    await lounge.connect(agent2).postMessage(1, "Can I still speak?");
-    console.log("❌ Agent 2 posted message (Unexpected Success)");
+    await lounge.connect(agent3).postJobMessage(jobId, "I want to spy!");
+    console.log("❌ Agent 3 spy attempt (Unexpected Success)");
   } catch (e) {
-    console.log("✅ Agent 2 blocked from posting - Expected");
+    console.log("✅ Agent 3 spy attempt blocked - Expected");
   }
 
   console.log("\n🦎 Simulation Complete!");

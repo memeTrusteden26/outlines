@@ -1,5 +1,5 @@
 
-export const LAZY_TASK_MARKETPLACE_ADDRESS = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+export const LAZY_TASK_MARKETPLACE_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
 export const LAZY_TASK_MARKETPLACE_ABI = [
   {
     "inputs": [
@@ -825,7 +825,7 @@ export const LAZY_TASK_MARKETPLACE_ABI = [
   }
 ] as const;
 
-export const REPUTATION_REGISTRY_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const REPUTATION_REGISTRY_ADDRESS = "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0";
 export const REPUTATION_REGISTRY_ABI = [
   {
     "inputs": [],
@@ -1476,7 +1476,7 @@ export const REPUTATION_REGISTRY_ABI = [
   }
 ] as const;
 
-export const REWARD_ENGINE_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export const REWARD_ENGINE_ADDRESS = "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82";
 export const REWARD_ENGINE_ABI = [
   {
     "inputs": [],
@@ -2717,7 +2717,7 @@ export const REWARD_ENGINE_ABI = [
   }
 ] as const;
 
-export const BADGE_NFT_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+export const BADGE_NFT_ADDRESS = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 export const BADGE_NFT_ABI = [
   {
     "inputs": [],
@@ -3453,13 +3453,18 @@ export const BADGE_NFT_ABI = [
   }
 ] as const;
 
-export const LIZARD_LOUNGE_ADDRESS = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+export const LIZARD_LOUNGE_ADDRESS = "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1";
 export const LIZARD_LOUNGE_ABI = [
   {
     "inputs": [
       {
         "internalType": "address",
         "name": "_reputationRegistry",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_marketplace",
         "type": "address"
       }
     ],
@@ -3486,6 +3491,37 @@ export const LIZARD_LOUNGE_ABI = [
     ],
     "name": "AccessControlUnauthorizedAccount",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "content",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "JobMessage",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -3862,6 +3898,19 @@ export const LIZARD_LOUNGE_ABI = [
   },
   {
     "inputs": [],
+    "name": "marketplace",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "nextTableId",
     "outputs": [
       {
@@ -3871,6 +3920,24 @@ export const LIZARD_LOUNGE_ABI = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_content",
+        "type": "string"
+      }
+    ],
+    "name": "postJobMessage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

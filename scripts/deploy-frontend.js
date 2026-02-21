@@ -41,7 +41,7 @@ async function main() {
 
   // 5. Deploy LizardLounge
   const LizardLounge = await hre.ethers.getContractFactory("LizardLounge");
-  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress);
+  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress, lazyTaskMarketplaceAddress);
   await lizardLounge.waitForDeployment();
   const lizardLoungeAddress = await lizardLounge.getAddress();
   console.log("LizardLounge deployed to:", lizardLoungeAddress);

@@ -8,6 +8,19 @@ interface IReputationRegistry {
     function setMinReputationScore(string memory _jobType, uint256 _score) external;
 }
 
+interface ILazyTaskMarketplace {
+    function jobs(uint256 _jobId) external view returns (
+        address customer,
+        address worker,
+        uint256 bounty,
+        uint256 workerBond,
+        uint256 timestamp,
+        string memory jobType,
+        uint8 status,
+        string memory evidenceHash
+    );
+}
+
 contract LizardLounge is AccessControl {
     struct Table {
         uint256 id;
@@ -22,6 +35,7 @@ contract LizardLounge is AccessControl {
     mapping(uint256 => mapping(address => bool)) public tableMembers;
 
     address public reputationRegistry;
+    address public marketplace;
     uint256 public constant MIN_REP_TO_ANNOUNCE = 100; // Minimum score to register a new skill
 
     event TableCreated(uint256 indexed tableId, string name, address indexed host, string topic);
@@ -30,10 +44,12 @@ contract LizardLounge is AccessControl {
     event Message(uint256 indexed tableId, address indexed sender, string content, uint256 timestamp);
     event SkillAnnounced(address indexed agent, string skill);
     event MemberKicked(uint256 indexed tableId, address indexed agent);
+    event JobMessage(uint256 indexed jobId, address indexed sender, string content, uint256 timestamp);
 
-    constructor(address _reputationRegistry) {
+    constructor(address _reputationRegistry, address _marketplace) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         reputationRegistry = _reputationRegistry;
+        marketplace = _marketplace;
     }
 
     // --- Social Features ---
@@ -44,6 +60,13 @@ contract LizardLounge is AccessControl {
             require(tableMembers[_tableId][msg.sender], "Not a member of this table");
         }
         emit Message(_tableId, msg.sender, _content, block.timestamp);
+    }
+
+    // Job-Specific Chat (Private between Customer and Worker)
+    function postJobMessage(uint256 _jobId, string memory _content) external {
+        (address customer, address worker, , , , , , ) = ILazyTaskMarketplace(marketplace).jobs(_jobId);
+        require(msg.sender == customer || msg.sender == worker, "Not authorized for this job chat");
+        emit JobMessage(_jobId, msg.sender, _content, block.timestamp);
     }
 
     // --- Table Management ---
