@@ -51,6 +51,8 @@ contract LazyTaskMarketplace is AccessControl {
     event JobSlashed(uint256 indexed jobId, address indexed worker, uint256 amount);
     event EvidenceSubmitted(uint256 indexed jobId, address indexed worker, string evidenceHash);
     event FeeTaken(uint256 indexed jobId, uint256 fee, uint256 workerEarnings);
+    event TreasuryUpdated(address indexed oldTreasury, address indexed newTreasury);
+    event PlatformFeeUpdated(uint256 oldFeeBps, uint256 newFeeBps);
 
     constructor(address _reputationRegistry, address _rewardEngine) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -210,5 +212,17 @@ contract LazyTaskMarketplace is AccessControl {
         }
 
         emit JobResolved(_jobId, msg.sender, _workerWins);
+    }
+
+    function setTreasury(address _treasury) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_treasury != address(0), "Invalid address");
+        emit TreasuryUpdated(treasury, _treasury);
+        treasury = _treasury;
+    }
+
+    function setPlatformFee(uint256 _feeBps) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_feeBps <= 10000, "Fee too high");
+        emit PlatformFeeUpdated(platformFeeBps, _feeBps);
+        platformFeeBps = _feeBps;
     }
 }

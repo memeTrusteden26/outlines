@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+const fs = require("fs");
 
 async function main() {
   console.log("🚀 Deploying LazyTask Marketplace Contracts...\n");
@@ -17,6 +18,16 @@ async function main() {
   await badgeNFT.waitForDeployment();
   const badgeNFTAddress = await badgeNFT.getAddress();
   console.log(`   ✅ BadgeNFT deployed at: ${badgeNFTAddress}`);
+
+  // ============================================
+  // 1.5 Deploy LizardToken (Lizard Lab)
+  // ============================================
+  console.log("\n1️⃣.5️⃣ Deploying LizardToken...");
+  const LizardToken = await ethers.getContractFactory("LizardToken");
+  const lizardToken = await LizardToken.deploy();
+  await lizardToken.waitForDeployment();
+  const lizardTokenAddress = await lizardToken.getAddress();
+  console.log(`   ✅ LizardToken deployed at: ${lizardTokenAddress}`);
 
   // ============================================
   // 2. Deploy ReputationRegistry (needs BadgeNFT)
@@ -83,6 +94,22 @@ async function main() {
   console.log(`   ✅ Granted MARKETPLACE_ROLE to LazyTaskMarketplace in both registries`);
 
   // ============================================
+  // 4.5 Deploy LizardLounge
+  // ============================================
+  console.log("\n4️⃣.5️⃣ Deploying LizardLounge...");
+  const LizardLounge = await ethers.getContractFactory("LizardLounge");
+  const lizardLounge = await LizardLounge.deploy(reputationRegistryAddress, lizardTokenAddress);
+  await lizardLounge.waitForDeployment();
+  const lizardLoungeAddress = await lizardLounge.getAddress();
+  console.log(`   ✅ LizardLounge deployed at: ${lizardLoungeAddress}`);
+
+  // Grant SKILL_REGISTRY_ROLE to LizardLounge in ReputationRegistry
+  const SKILL_REGISTRY_ROLE = await reputationRegistry.SKILL_REGISTRY_ROLE();
+  await reputationRegistry.grantRole(SKILL_REGISTRY_ROLE, lizardLoungeAddress);
+  console.log(`   ✅ Granted SKILL_REGISTRY_ROLE to LizardLounge`);
+
+
+  // ============================================
   // 5. Deploy ArbitratorGovernance
   // ============================================
   console.log("\n5️⃣ Deploying ArbitratorGovernance...");
@@ -135,9 +162,11 @@ async function main() {
   console.log("📋 DEPLOYMENT SUMMARY");
   console.log("=".repeat(60));
   console.log(`BadgeNFT:             ${badgeNFTAddress}`);
+  console.log(`LizardToken:          ${lizardTokenAddress}`);
   console.log(`ReputationRegistry:   ${reputationRegistryAddress}`);
   console.log(`RewardEngine:         ${rewardEngineAddress}`);
   console.log(`LazyTaskMarketplace:  ${lazyTaskMarketplaceAddress}`);
+  console.log(`LizardLounge:         ${lizardLoungeAddress}`);
   console.log(`ArbitratorGovernance: ${arbitratorGovernanceAddress}`);
   console.log(`AgentSubscription:    ${agentSubscriptionAddress}`);
   console.log(`AgenticOperation:     ${agenticOperationAddress}`);
@@ -145,12 +174,13 @@ async function main() {
   console.log("=".repeat(60));
 
   // Save addresses to a file for frontend usage
-  const fs = require("fs");
   const addresses = {
     BadgeNFT: badgeNFTAddress,
+    LizardToken: lizardTokenAddress,
     ReputationRegistry: reputationRegistryAddress,
     RewardEngine: rewardEngineAddress,
     LazyTaskMarketplace: lazyTaskMarketplaceAddress,
+    LizardLounge: lizardLoungeAddress,
     ArbitratorGovernance: arbitratorGovernanceAddress,
     AgentSubscription: agentSubscriptionAddress,
     AgenticOperation: agenticOperationAddress,

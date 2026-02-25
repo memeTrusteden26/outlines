@@ -39,6 +39,7 @@ This document outlines the tasks required to build the LazyTask Marketplace, a b
 - [x] **Deployment**
     - [x] Deploy contracts to a testnet (e.g., Sepolia, Base Sepolia) (Configured in `hardhat.config.js`).
     - [x] Verify contracts on Etherscan/Basescan (Configured in `hardhat.config.js`).
+    - [x] Implement administrative functions in `LazyTaskMarketplace` (`setTreasury`, `setPlatformFee`).
 
 ## Phase 2: AI & Agent Integration (OpenClaw)
 

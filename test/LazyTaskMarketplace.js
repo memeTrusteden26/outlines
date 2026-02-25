@@ -193,4 +193,39 @@ describe("LazyTaskMarketplace", function () {
     expect(types[0]).to.equal("Cleaning");
     expect(types[1]).to.equal("Programming");
   });
+
+  describe("Administrative Functions", function () {
+    it("Should allow admin to update treasury", async function () {
+      await expect(marketplace.connect(owner).setTreasury(other.address))
+        .to.emit(marketplace, "TreasuryUpdated")
+        .withArgs(owner.address, other.address);
+
+      expect(await marketplace.treasury()).to.equal(other.address);
+    });
+
+    it("Should allow admin to update platform fee", async function () {
+      const newFee = 1000; // 10%
+      await expect(marketplace.connect(owner).setPlatformFee(newFee))
+        .to.emit(marketplace, "PlatformFeeUpdated")
+        .withArgs(500, newFee);
+
+      expect(await marketplace.platformFeeBps()).to.equal(newFee);
+    });
+
+    it("Should fail if non-admin tries to update treasury or fee", async function () {
+      await expect(marketplace.connect(customer).setTreasury(other.address))
+        .to.be.reverted; // AccessControl error
+
+      await expect(marketplace.connect(customer).setPlatformFee(1000))
+        .to.be.reverted;
+    });
+
+    it("Should fail with invalid inputs", async function () {
+      await expect(marketplace.connect(owner).setTreasury(ethers.ZeroAddress))
+        .to.be.revertedWith("Invalid address");
+
+      await expect(marketplace.connect(owner).setPlatformFee(10001))
+        .to.be.revertedWith("Fee too high");
+    });
+  });
 });
