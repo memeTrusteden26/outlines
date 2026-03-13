@@ -9,6 +9,7 @@ interface IBadgeNFT {
 
 contract ReputationRegistry is AccessControl {
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
+    bytes32 public constant SKILL_REGISTRY_ROLE = keccak256("SKILL_REGISTRY_ROLE");
 
     address public badgeNFT;
 
@@ -38,7 +39,8 @@ contract ReputationRegistry is AccessControl {
         badgeNFT = _badgeNFT;
     }
 
-    function setMinReputationScore(string memory _jobType, uint256 _score) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setMinReputationScore(string memory _jobType, uint256 _score) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(SKILL_REGISTRY_ROLE, msg.sender), "Not authorized");
         minReputationScores[_jobType] = _score;
         emit MinScoreSet(_jobType, _score);
     }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useReadContract, useWriteContract, useAccount } from "wagmi";
 import { LAZY_TASK_MARKETPLACE_ADDRESS, LAZY_TASK_MARKETPLACE_ABI } from "@/config/contracts";
 import { formatEther } from "viem";
+import JobChat from "./JobChat";
 
 export function MyJobs() {
   const { address } = useAccount();
@@ -91,6 +92,7 @@ export function MyJobCardView({
 }) {
   const [evidenceHash, setEvidenceHash] = useState("");
   const [rating, setRating] = useState(5);
+  const [showChat, setShowChat] = useState(false);
 
   // Filter logic
   // job[0] is customer, job[1] is worker
@@ -123,16 +125,27 @@ export function MyJobCardView({
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 relative">
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-bold text-lg">{job[5]}</h3>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${
-          jobStatus === 0 ? "bg-green-100 text-green-800" :
-          jobStatus === 1 ? "bg-blue-100 text-blue-800" :
-          "bg-gray-100 text-gray-800"
-        }`}>
-          {statusLabels[jobStatus]}
-        </span>
+        <div className="flex gap-2 items-center">
+            {/* Chat Button (Only visible if Accepted, Disputed, or Completed?) - usually Accepted */}
+            {jobStatus >= 1 && (
+                <button
+                    onClick={() => setShowChat(true)}
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1"
+                >
+                    <span>💬</span> Chat
+                </button>
+            )}
+            <span className={`px-2 py-1 rounded text-xs font-medium ${
+            jobStatus === 0 ? "bg-green-100 text-green-800" :
+            jobStatus === 1 ? "bg-blue-100 text-blue-800" :
+            "bg-gray-100 text-gray-800"
+            }`}>
+            {statusLabels[jobStatus]}
+            </span>
+        </div>
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-4">
         <p>Bounty: <span className="font-mono text-black dark:text-white">{formatEther(job[2])} ETH</span></p>
@@ -204,6 +217,16 @@ export function MyJobCardView({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Render Chat Modal */}
+      {showChat && (
+        <JobChat
+            jobId={jobId}
+            isOpen={showChat}
+            onClose={() => setShowChat(false)}
+            currentUser={userAddress}
+        />
       )}
     </div>
   );
